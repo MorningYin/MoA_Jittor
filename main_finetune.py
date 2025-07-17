@@ -338,7 +338,7 @@ if __name__ == '__main__':
     # 如果未提供命令行参数，则使用默认调试参数
     if len(sys.argv) == 1:
         default_cli = [
-            '--llama_path', '/root/MoA_Jittor/Pretrained_Model/Meta-Llama-3.1-8B',
+            '--llama_path', '/root/MoA_Jittor/Pre_trained_Models/LLaMA/original',
             '--data_path',  '/root/MoA_Jittor/Data/Dataset/commonsense_15k/train.json',
             '--output_dir', './output_jt',
             '--device', 'cuda',
