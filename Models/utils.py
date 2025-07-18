@@ -75,12 +75,12 @@ def precompute_freqs_cis(
     # ==================== 频率计算 ====================
     # 计算不同维度的频率：1 / (theta^(2i/dim))
     freqs = 1.0 / (
-        theta ** (jt.arange(0, dim, 2)[: dim // 2].float32() / dim)
+        theta ** (jt.arange(0, dim, 2)[: dim // 2].float16() / dim)
     )  # [dim//2]
     
     # ==================== 位置索引 ====================
     # 生成位置索引张量
-    t = jt.arange(end).float32()
+    t = jt.arange(end).float16()
     
     # ==================== 频率缩放（可选） ====================
     if use_scaled:

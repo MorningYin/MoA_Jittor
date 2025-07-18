@@ -23,9 +23,9 @@ class RMSNorm(nn.Module):
     """
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
-        self.eps = eps  # 数值稳定性常数
+        self.eps = jt.array(eps, dtype='float16')  # 数值稳定性常数
         # 可学习的缩放参数，初始化为1
-        self.weight = nn.Parameter(jt.ones(dim))
+        self.weight = nn.Parameter(jt.ones(dim, dtype='float16'))
 
     def _norm(self, x):
         """
@@ -90,30 +90,30 @@ class MOELoraLayer(nn.Module):
         # ==================== 单专家模式（标准LoRA） ====================
         if expert_num == 1:
             # 创建标准的LoRA A和B矩阵
-            self.lora_A = nn.Linear(input_dim, r, bias=False)  # 降维矩阵A
-            self.lora_B = nn.Linear(r, output_dim, bias=False)  # 升维矩阵B
+            self.lora_A = nn.Linear(input_dim, r, bias=False).float16()  # 降维矩阵A
+            self.lora_B = nn.Linear(r, output_dim, bias=False).float16()  # 升维矩阵B
             nn.init.constant_(self.lora_B.weight, 0.0)  # 初始化B矩阵为零
 
         # ==================== 多专家模式（MoE LoRA） ====================
         elif expert_num > 1: # moe
             # 创建路由器，用于选择专家
-            self.router = nn.Linear(input_dim, expert_num, bias=False)
+            self.router = nn.Linear(input_dim, expert_num, bias=False).float16()
             
             # ==================== A矩阵设置 ====================
             if hydra:
                 # Hydra模式：所有专家共享一个A矩阵
-                self.lora_A = nn.Linear(input_dim, r, bias=False)
+                self.lora_A = nn.Linear(input_dim, r, bias=False).float16()
             else:
                 # 标准模式：每个专家有独立的A矩阵
                 self.lora_A_l = nn.ModuleList()
                 for i in range(expert_num):
-                    self.lora_A_l.append(nn.Linear(input_dim, r, bias=False))
+                    self.lora_A_l.append(nn.Linear(input_dim, r, bias=False).float16())
                 
             # ==================== B矩阵设置 ====================
             # 每个专家都有独立的B矩阵
             self.lora_B_l = nn.ModuleList()
             for i in range(expert_num):
-                self.lora_B_l.append(nn.Linear(r, output_dim, bias=False))
+                self.lora_B_l.append(nn.Linear(r, output_dim, bias=False).float16())
 
             # ==================== 初始化B矩阵为零 ====================
             # 确保训练开始时LoRA适配器不影响原始模型输出
@@ -177,6 +177,7 @@ class MOELoraLayer(nn.Module):
         Returns:
             result: 输出张量，形状为 [batch_size, seq_len, output_dim]
         """
+
         # ==================== 单专家模式（标准LoRA） ====================
         if self.expert_num == 1:
             # 标准LoRA计算：A矩阵降维 -> B矩阵升维 -> 缩放
@@ -248,29 +249,29 @@ class PAdapterLayer(nn.Module):
         # ==================== 单专家模式（标准Parallel Adapter） ====================
         if expert_num == 1:
             # 标准的降维-升维结构
-            self.down_proj = nn.Linear(hidden_size, adapter_size)  # 降维投影
-            self.up_proj = nn.Linear(adapter_size, hidden_size)    # 升维投影
+            self.down_proj = nn.Linear(hidden_size, adapter_size).float16()  # 降维投影
+            self.up_proj = nn.Linear(adapter_size, hidden_size).float16()    # 升维投影
             
         # ==================== 多专家模式（MoE Parallel Adapter） ====================
         elif expert_num > 1: # moe
             # 创建路由器，用于选择专家
-            self.router = nn.Linear(hidden_size, expert_num)
+            self.router = nn.Linear(hidden_size, expert_num).float16()
             
             # ==================== 降维投影设置 ====================
             if hydra:
                 # Hydra模式：所有专家共享一个降维矩阵
-                self.down_proj = nn.Linear(hidden_size, adapter_size)
+                self.down_proj = nn.Linear(hidden_size, adapter_size).float16()
             else:
                 # 标准模式：每个专家有独立的降维矩阵
                 self.down_proj_l = nn.ModuleList()
                 for i in range(expert_num):
-                    self.down_proj_l.append(nn.Linear(hidden_size, adapter_size))
+                    self.down_proj_l.append(nn.Linear(hidden_size, adapter_size).float16())
                 
             # ==================== 升维投影设置 ====================
             # 每个专家都有独立的升维矩阵
             self.up_proj_l = nn.ModuleList()
             for i in range(expert_num):
-                self.up_proj_l.append(nn.Linear(adapter_size, hidden_size))
+                self.up_proj_l.append(nn.Linear(adapter_size, hidden_size).float16())
         else:
             raise Exception("The number of Experts is wrong")
         
@@ -395,15 +396,15 @@ class Router(nn.Module):
         # 第一个线性变换，用于门控机制
         self.w1 = nn.Linear(
             in_dim, hidden_dim
-        )
+        ).float16()
         # 输出线性变换
         self.w2 = nn.Linear(
             hidden_dim, out_dim
-        )
+        ).float16()
         # 第二个线性变换，用于门控机制
         self.w3 = nn.Linear(
             in_dim, hidden_dim
-        )
+        ).float16()
         
         # ==================== 偏置初始化 ====================
         # 将所有偏置初始化为0
@@ -447,13 +448,13 @@ class FeedForward(nn.Module):
 
         self.w1 = nn.Linear(
             dim, hidden_dim, bias=args.w_bias
-        )
+        ).float16()
         self.w2 = nn.Linear(
             hidden_dim, dim, bias=args.w_bias
-        )
+        ).float16()
         self.w3 = nn.Linear(
             dim, hidden_dim, bias=args.w_bias
-        )
+        ).float16()
         if args.w_bias:
             nn.init.constant_(self.w1.bias, 0)
             nn.init.constant_(self.w2.bias, 0)
@@ -530,25 +531,25 @@ class Attention(nn.Module):
             args.dim,
             args.n_heads * self.head_dim,
             bias=args.w_bias
-        )
+        ).float16()
         # Key投影矩阵（无偏置）
         self.wk = nn.Linear(
             args.dim,
             args.n_kv_heads * self.head_dim,
             bias=False
-        )
+        ).float16()
         # Value投影矩阵（无偏置）
         self.wv = nn.Linear(
             args.dim,
             args.n_kv_heads * self.head_dim,
             bias=False
-        )
+        ).float16()
         # 输出投影矩阵
         self.wo = nn.Linear(
             args.n_heads * self.head_dim,
             args.dim,
             bias=args.w_bias
-        )
+        ).float16()
         
         # ==================== 偏置初始化 ====================
         if args.w_bias:
@@ -593,12 +594,12 @@ class Attention(nn.Module):
         self.w_prompt = w_prompt
         if self.w_prompt:
             # 可学习的prompt嵌入
-            self.prompt = nn.Embedding(args.expert_num * args.prompt_len, args.dim)
+            self.prompt = nn.Embedding(args.expert_num * args.prompt_len, args.dim).float16()
             # Prompt门控参数
-            self.prompt_gate = nn.Parameter(jt.zeros((1, self.n_local_heads, 1, 1)))
+            self.prompt_gate = nn.Parameter(jt.zeros((1, self.n_local_heads, 1, 1), dtype='float16'))
             # 多专家模式下的prompt路由器
             if self.args.expert_num >1:
-                self.prompt_router = nn.Linear(args.dim, self.args.expert_num)
+                self.prompt_router = nn.Linear(args.dim, self.args.expert_num).float16()
                 
         # ==================== KV缓存设置 ====================
         self.cache_k = None  # Key缓存
@@ -759,6 +760,8 @@ class Attention(nn.Module):
             prompt_v = prompt_v.transpose(1, 2) # [bs, n_local_heads, expert_num * prompt_len, head_dim]
 
             # ==================== Prompt注意力计算 ====================
+            # 确保数据类型一致
+            xq = xq.astype(prompt_k.dtype)
             # 计算序列与prompt之间的注意力分数
             prompt_scores = jt.matmul(xq, prompt_k.transpose(2, 3)) / math.sqrt(self.head_dim) # [bs, n_local_heads, seqlen, expert_num * prompt_len]
             
@@ -766,7 +769,9 @@ class Attention(nn.Module):
             # 应用prompt门控和softmax
             # self.prompt_gate 默认是 float32，而 softmax 输出根据 AMP 可能是 float16；
             # 二者直接相乘会触发 dtype 不一致的编译错误。先将 prompt_gate 转成与 xq 一致的数据类型。
-            prompt_scores = self.prompt_gate * nn.softmax(prompt_scores, dim=-1)
+            softmax_output = nn.softmax(prompt_scores, dim=-1)
+            prompt_gate = self.prompt_gate.astype(softmax_output.dtype)
+            prompt_scores = prompt_gate * softmax_output
 
             # ==================== 专家输出计算 ====================
             # 重塑为专家格式
@@ -774,6 +779,8 @@ class Attention(nn.Module):
             prompt_v = prompt_v.reshape(bsz, self.n_local_heads, self.args.expert_num, self.args.prompt_len, self.head_dim)
             
             # 计算专家输出
+            # 确保数据类型一致
+            prompt_scores = prompt_scores.astype(prompt_v.dtype)
             experts_output = jt.matmul(prompt_scores, prompt_v) # [bsz, local_heads, expertnum, seqlen, head_dim]
             experts_output = experts_output.permute(0,3,2,1,4).contiguous().reshape(bsz,seqlen,self.args.expert_num, -1)
             

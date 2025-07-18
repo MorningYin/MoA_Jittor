@@ -245,8 +245,6 @@ def main(args):
     optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
     print(optimizer)  # 打印优化器配置信息
     
-    # 不再使用自定义损失缩放器，直接依赖 Jittor 内部 AMP
-    loss_scaler = None
 
     # 注释掉的模型加载代码，用于从预训练检查点恢复训练
     # misc.load_model(model_without_ddp, args.pretrained_path)
@@ -331,14 +329,13 @@ def main(args):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('Training time {}'.format(total_time_str))
 
-
 if __name__ == '__main__':
     parser = get_args_parser()
 
     # 如果未提供命令行参数，则使用默认调试参数
     if len(sys.argv) == 1:
         default_cli = [
-            '--llama_path', '/root/MoA_Jittor/Pre_trained_Models/LLaMA/original',
+            '--llama_path', '/root/autodl-tmp/MoA_Jittor_Models/LLaMA/original',
             '--data_path',  '/root/MoA_Jittor/Data/Dataset/commonsense_15k/train.json',
             '--output_dir', './output_jt',
             '--device', 'cuda',
@@ -352,7 +349,9 @@ if __name__ == '__main__':
             '--lora_targets', 'Q,K,V,O',
             '--prompt_layers', '2-32',
             '--p_adapter_layers', '2-32',
-            '--swi_x', '1'
+            '--swi_x', '1',
+            '--seed', '1234',
+            '--output_dir', '/root/autodl-tmp'
         ]
         print('[DEBUG] 使用默认参数:', ' '.join(default_cli))
         args = parser.parse_args(default_cli)

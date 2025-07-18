@@ -77,15 +77,15 @@ def train_one_epoch(model: LLaMA_adapter,
             c_loss, m_loss = model(examples, labels, prompt_mask)
         
         # ==================== 损失组合 ====================
-        loss = c_loss + m_loss * 0  # 当前只使用分类损失，掩码损失权重为0
-        loss_value = loss.item()     # 获取损失值
-        c_loss_value = c_loss.item() # 分类损失值
+        loss = c_loss + m_loss * 0   # 当前只使用分类损失，掩码损失权重为0
+        loss_value = loss            # 获取损失值
+        c_loss_value = c_loss        # 分类损失值
         m_loss_value = m_loss        # 掩码损失值
         
         # ==================== 损失有效性检查 ====================
-        if not math.isfinite(loss_value):
-            print("Loss is {}, stopping training".format(loss_value))
-            sys.exit(1)  # 如果损失为无穷大或NaN，停止训练
+        # if not math.isfinite(loss_value):
+        #     print("Loss is {}, stopping training".format(loss_value))
+        #     sys.exit(1)  # 如果损失为无穷大或NaN，停止训练
 
         # ==================== 梯度累积处理 ====================
         loss /= accum_iter  # 将损失除以累积步数
@@ -99,6 +99,8 @@ def train_one_epoch(model: LLaMA_adapter,
             # optimizer.clip_grad_norm(max_norm=1.0)
             optimizer.step()      # 参数更新
             optimizer.zero_grad() # 清零梯度，为下次累积做准备
+
+            model.float16()
 
         # ==================== GPU同步 ====================
         jt.sync_all(True)  # type: ignore[attr-defined]  # 确保GPU操作完成

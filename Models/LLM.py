@@ -51,7 +51,7 @@ class TransformerBlock(nn.Module):
         
         if args.swi_x == 0:
             # 直接用 Linear 做路由：输出维度 = adapter_type
-            self.adapter_type_router = nn.Linear(args.dim, self.adapter_type)
+            self.adapter_type_router = nn.Linear(args.dim, self.adapter_type).float16()
         elif args.swi_x > 0:
             # 使用两层 MLP(或 SwiGLU) 做更复杂的路由
             # 隐藏层宽度 = adapter_type * swi_x
@@ -127,7 +127,7 @@ class Transformer(nn.Module):
         self.vocab_size = params.vocab_size
         self.n_layers = params.n_layers
         self.tok_embeddings = nn.Embedding(
-            params.vocab_size, params.dim
+            params.vocab_size, params.dim, dtype='float16'
         )
 
         # -------- 创建词嵌入 --------
@@ -160,7 +160,7 @@ class Transformer(nn.Module):
         self.norm = RMSNorm(params.dim, eps=params.norm_eps)
         self.output = nn.Linear(
             params.dim, params.vocab_size, bias=False
-        )
+        ).float16()
 
         # -------- 预计算旋转位置编码常数 --------
         self.freqs_cis = precompute_freqs_cis(
@@ -170,7 +170,6 @@ class Transformer(nn.Module):
             bool(params.use_scaled_rope),
         )
 
-        self.freqs_cis = jt.float16(self.freqs_cis)
 
 
     @inference_mode_jt

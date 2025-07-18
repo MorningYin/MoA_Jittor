@@ -421,16 +421,17 @@ def init_distributed_mode(args):
     if jt.in_mpi:
         args.rank       = jt.rank
         args.world_size = jt.world_size
-        # 用 rank 去做 round‐robin 分配 GPU
-        ngpus = jt.has_cuda and jt.get_device_count() or 1
-        gpu_id = args.rank % ngpus
+        gpu_id = args.rank % args.world_size
         args.gpu        = gpu_id
         args.distributed = args.world_size > 1
 
     # ========== GPU 设置 ==========
     if jt.has_cuda:
-        # 限制这个进程只能“看到”它该用的那块卡
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+        # 在MPI模式下，每个进程只能看到分配给它的GPU
+        if args.distributed:
+            # 设置CUDA_VISIBLE_DEVICES为当前进程的GPU ID
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+            print(f"[Jittor] Rank {args.rank} using GPU {args.gpu}")
         # 打开全局 GPU 开关
         jt.flags.use_cuda = 1
 
@@ -446,39 +447,115 @@ def init_distributed_mode(args):
 
 def save_model(args, epoch, model, optimizer):
     """
-    保存模型检查点
+    保存模型检查点 - 只保存可训练参数
     
-    该函数用于保存训练过程中的模型检查点，包含完整的训练状态。
-    支持两种保存模式：
-    1. 使用loss_scaler的混合精度训练模式
-    2. 不使用loss_scaler的普通训练模式
+    该函数用于保存训练过程中的模型检查点，只保存可训练的参数。
+    根据微调专家配置设计文件夹名称，文件名使用epoch信息。
     
     Args:
         args: 训练参数对象
         epoch (int): 当前训练轮次
-        model: 模型对象（可能包含DDP包装）
-        model_without_ddp: 不带DDP包装的模型对象
+        model: 模型对象
         optimizer: 优化器对象
-        loss_scaler: 损失缩放器对象，如果为None则使用普通保存模式
     """
+    # ==================== 生成文件夹名称 ====================
+    folder_name = generate_model_folder_name(args)
+    
     # ==================== 路径设置 ====================
-    output_dir = Path(args.output_dir)  # 输出目录
+    output_dir = Path(args.output_dir) / folder_name  # 输出目录
+    output_dir.mkdir(parents=True, exist_ok=True)  # 创建目录
+    
     epoch_name = str(epoch)  # 轮次名称
     
-    # ==================== 统一保存（不区分 loss_scaler） ====================
+    # ==================== 只保存可训练参数 ====================
     # 构建检查点文件路径
     checkpoint_path = output_dir / (f"checkpoint-{epoch_name}.pth")
 
-    # 统一构建要保存的状态字典
+    # 只保存可训练参数的状态字典
+    trainable_state_dict = {}
+    for name, param in model.named_parameters():
+        if param.requires_grad:  # 只保存可训练参数
+            trainable_state_dict[name] = param.data
+
+    # 构建要保存的状态字典
     to_save = {
-        'model': model.state_dict(),          # 模型权重
-        'optimizer': optimizer.state_dict(),  # 优化器状态
-        'epoch': epoch,                       # 轮次编号
-        'args': args,                         # 训练参数
+        'trainable_params': trainable_state_dict,  # 只保存可训练参数
+        'optimizer': optimizer.state_dict(),       # 优化器状态
+        'epoch': epoch,                           # 轮次编号
+        'args': args,                             # 训练参数
     }
 
     # 保存检查点（仅主进程执行）
     save_on_master(to_save, str(checkpoint_path))
+    
+    print(f"Saved trainable parameters to: {checkpoint_path}")
+    print(f"Trainable parameters count: {len(trainable_state_dict)}")
+
+
+def generate_model_folder_name(args):
+    """
+    根据微调专家配置生成文件夹名称
+    
+    Args:
+        args: 训练参数对象
+        
+    Returns:
+        str: 文件夹名称
+    """
+    components = []
+    
+    # ==================== LoRA 配置 ====================
+    if args.lora_layers != '0-0':
+        lora_info = f"LoRA_{args.lora_layers}_r{args.lora_rank}_a{args.lora_alpha}"
+        if args.lora_targets != 'Q,V':
+            lora_info += f"_{args.lora_targets}"
+        components.append(lora_info)
+    
+    # ==================== Prompt Tuning 配置 ====================
+    if args.prompt_layers != '0-0':
+        prompt_info = f"Prompt_{args.prompt_layers}_len{args.prompt_len}"
+        components.append(prompt_info)
+    
+    # ==================== Parallel Adapter 配置 ====================
+    if args.p_adapter_layers != '0-0':
+        adapter_info = f"PAdapter_{args.p_adapter_layers}_size{args.p_adapter_size}"
+        if args.p_adapter_hydra:
+            adapter_info += "_hydra"
+        components.append(adapter_info)
+    
+    # ==================== 专家配置 ====================
+    if args.expert_num > 1:
+        expert_info = f"MoE_expert{args.expert_num}"
+        if args.hydra_moe:
+            expert_info += "_hydra"
+        if args.expert_weight:
+            expert_info += "_weighted"
+        components.append(expert_info)
+    
+    # ==================== 偏置微调配置 ====================
+    if args.w_bias:
+        components.append("bias_tune")
+    
+    # ==================== SwiGLU 路由配置 ====================
+    if args.swi_x > 0:
+        components.append(f"swi_x{args.swi_x}")
+    
+    # ==================== 学习率配置 ====================
+    if hasattr(args, 'lr') and args.lr is not None:
+        lr_str = f"lr{args.lr:.0e}".replace('e-0', 'e-').replace('e+0', 'e')
+        components.append(lr_str)
+    
+    # ==================== 批次大小配置 ====================
+    if hasattr(args, 'batch_size'):
+        components.append(f"bs{args.batch_size}")
+    
+    # ==================== 组合文件夹名称 ====================
+    if components:
+        folder_name = "_".join(components)
+    else:
+        folder_name = "full_finetune"  # 如果没有特殊配置，使用全参数微调
+    
+    return folder_name
 
 
 def all_reduce_mean(x):
@@ -554,51 +631,36 @@ def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
     ]
 
 
-def download(url: str, root: str):
+def find_latest_checkpoint(output_dir, folder_name=None):
     """
-    下载文件到指定目录
-    
-    该函数用于从URL下载文件到本地目录，支持进度条显示和文件存在性检查。
-    如果文件已存在，则直接返回文件路径；如果不存在，则下载文件。
+    查找最新的检查点文件
     
     Args:
-        url (str): 要下载的文件URL
-        root (str): 本地保存目录
+        output_dir: 输出目录
+        folder_name: 文件夹名称，如果为None则搜索所有文件夹
         
     Returns:
-        str: 下载文件的完整路径
-        
-    Raises:
-        RuntimeError: 当目标路径存在但不是普通文件时抛出异常
+        str: 最新检查点的路径，如果没找到则返回None
     """
-    # ==================== 目录创建 ====================
-    os.makedirs(root, exist_ok=True)  # 创建目录（如果不存在）
+    output_path = Path(output_dir)
     
-    # ==================== 文件路径设置 ====================
-    filename = os.path.basename(url)  # 从URL提取文件名
-    download_target = os.path.join(root, filename)  # 构建完整文件路径
-
-    # ==================== 文件存在性检查 ====================
-    # 检查目标路径是否存在但不是普通文件（如目录）
-    if os.path.exists(download_target) and not os.path.isfile(download_target):
-        raise RuntimeError(f"{download_target} exists and is not a regular file")
-
-    # 如果文件已存在，直接返回路径
-    if os.path.isfile(download_target):
-        return download_target
-
-    # ==================== 文件下载 ====================
-    # 使用上下文管理器同时处理网络连接和文件写入
-    with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        # 创建进度条显示下载进度
-        with tqdm(total=int(source.info().get("Content-Length")), ncols=80, unit='iB', unit_scale=True, unit_divisor=1024) as loop:
-            # 分块读取和写入文件
-            while True:
-                buffer = source.read(8192)  # 每次读取8KB数据
-                if not buffer:
-                    break  # 读取完毕，退出循环
-                output.write(buffer)        # 写入文件
-                loop.update(len(buffer))    # 更新进度条
-
-    # ==================== 返回文件路径 ====================
-    return download_target
+    if folder_name:
+        # 搜索指定文件夹
+        folder_path = output_path / folder_name
+        if not folder_path.exists():
+            return None
+        
+        checkpoints = list(folder_path.glob("checkpoint-*.pth"))
+    else:
+        # 搜索所有文件夹
+        checkpoints = []
+        for folder in output_path.iterdir():
+            if folder.is_dir():
+                checkpoints.extend(folder.glob("checkpoint-*.pth"))
+    
+    if not checkpoints:
+        return None
+    
+    # 按文件名排序，找到最新的
+    latest_checkpoint = max(checkpoints, key=lambda x: int(x.stem.split('-')[1]))
+    return str(latest_checkpoint)

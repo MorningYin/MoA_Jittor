@@ -3,8 +3,6 @@ import json
 import time
 from pathlib import Path
 
-import torch
-
 from .LLM import Transformer
 from .Tokenizer import Tokenizer
 from .ModelArgs import ModelArgs
@@ -12,40 +10,13 @@ from .ModelArgs import ModelArgs
 import jittor as jt
 import jittor.nn as nn
 
-def sample_top_p(probs, p):
-    """
-    核采样函数，从概率分布中采样，只考虑累积概率达到p的top tokens
-    """
-    sorted_indices = jt.argsort(probs, descending=True)
-    # 重新计算排序后的概率
-    sorted_probs = jt.gather(probs, dim=-1, index=sorted_indices)
-    cumulative_probs = jt.cumsum(sorted_probs, dim=-1)
-    sorted_indices_to_remove = cumulative_probs > p
-    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1]
-    sorted_indices_to_remove[..., 0] = False
-    # 创建掩码
-    indices_to_remove = jt.zeros_like(probs, dtype='bool')
-    for i in range(sorted_indices.shape[-1]):
-        mask = sorted_indices_to_remove[..., i:i+1]
-        idx = sorted_indices[..., i:i+1]
-        indices_to_remove = indices_to_remove.scatter(dim=-1, index=idx, src=mask)
-    probs = jt.where(indices_to_remove, jt.zeros_like(probs), probs)
-    return jt.multinomial(probs, num_samples=1)
-
-
 def to_float16(raw_sd):
     """
     将 state_dict 中的权重统一转换为 float16（Jittor Var）。
     """
     # 原地将所有张量转为 Jittor Var(float16)
     for k, v in raw_sd.items():
-        if isinstance(v, torch.Tensor):
-            # 转到 CPU → float16 → numpy → Jittor Var
-            arr = v.detach().cpu().to(torch.float16).numpy()
-            raw_sd[k] = jt.array(arr)
-        elif isinstance(v, jt.Var):
-            raw_sd[k] = v.float16()
-        # 其余类型保持不变
+        raw_sd[k] = v.float16()
 
 
 class LLaMA_adapter(nn.Module):
@@ -151,7 +122,7 @@ class LLaMA_adapter(nn.Module):
 
         for ckpt_path in sorted(Path(llama_ckpt_dir).glob("*.pth")):
             try:
-                state_dict = torch.load(str(ckpt_path), map_location=torch.device('cpu'))
+                state_dict = jt.load(str(ckpt_path))
             except Exception as e:
                 print(f"[Warning] jt.load 加载 {ckpt_path.name} 失败: {e}")
                 continue
@@ -207,8 +178,8 @@ class LLaMA_adapter(nn.Module):
                         
                 # ==================== 参数高效微调参数 ====================
                 # 解冻所有LoRA、Prompt Tuning、Adapter相关参数
-                if 'lora' in name or 'prompt' in name or 'adapter' in name:
-                    para.stop_grad()
+                if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name:
+                    para.start_grad()
 
     def execute(self, tokens, labels, prompt_mask):
         """
@@ -234,6 +205,8 @@ class LLaMA_adapter(nn.Module):
         # ==================== Token嵌入 ====================
         # 将token ID转换为嵌入向量
         h = self.llama.tok_embeddings(tokens)
+
+        # h.numpy()
         
         # ==================== 位置编码设置 ====================
         # 获取预计算的旋转位置编码（RoPE）
@@ -246,8 +219,11 @@ class LLaMA_adapter(nn.Module):
         
         # ==================== Transformer层前向传播 ====================
         # 逐层通过Transformer块
-        for layer in self.llama.layers:
+        for i, layer in enumerate(self.llama.layers):
             h = layer(h, 0, freqs_cis, mask)  # 0表示起始位置
+            # print(f"layer {i} : begin!!")
+            # h.numpy()
+            # print(f"layer {i} : success!!")
 
         # ==================== 最终输出处理 ====================
         h = self.llama.norm(h)  # 应用最终层归一化
@@ -273,171 +249,192 @@ class LLaMA_adapter(nn.Module):
         return c_loss, c_loss
 
 
-    @jt.no_grad()
-    def generate_unified(
-        self, 
-        prompts,
-        max_gen_len: int = 256,
-        temperature: float = 0.1,
-        top_p: float = 0.75,
-        enable_time_stat: bool = False,
-        enable_router_stat: bool = False,
-        enable_router_case: bool = False
-    ):
-        """
-        统一的文本生成方法，支持多种功能模式
+# def sample_top_p(probs, p):
+#     """
+#     核采样函数，从概率分布中采样，只考虑累积概率达到p的top tokens
+#     """
+#     sorted_indices = jt.argsort(probs, descending=True)
+#     # 重新计算排序后的概率
+#     sorted_probs = jt.gather(probs, dim=-1, index=sorted_indices)
+#     cumulative_probs = jt.cumsum(sorted_probs, dim=-1)
+#     sorted_indices_to_remove = cumulative_probs > p
+#     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1]
+#     sorted_indices_to_remove[..., 0] = False
+#     # 创建掩码
+#     indices_to_remove = jt.zeros_like(probs, dtype='bool')
+#     for i in range(sorted_indices.shape[-1]):
+#         mask = sorted_indices_to_remove[..., i:i+1]
+#         idx = sorted_indices[..., i:i+1]
+#         indices_to_remove = indices_to_remove.scatter(dim=-1, index=idx, src=mask)
+#     probs = jt.where(indices_to_remove, jt.zeros_like(probs), probs)
+#     return jt.multinomial(probs, num_samples=1)
+
+
+    # @jt.no_grad()
+    # def generate_unified(
+    #     self, 
+    #     prompts,
+    #     max_gen_len: int = 256,
+    #     temperature: float = 0.1,
+    #     top_p: float = 0.75,
+    #     enable_time_stat: bool = False,
+    #     enable_router_stat: bool = False,
+    #     enable_router_case: bool = False
+    # ):
+    #     """
+    #     统一的文本生成方法，支持多种功能模式
         
-        Args:
-            prompts: 输入提示列表，每个元素是token序列
-            max_gen_len: 最大生成长度
-            temperature: 温度参数，控制生成的随机性（0为确定性生成）
-            top_p: 核采样参数，控制词汇表截断范围
-            enable_time_stat: 是否启用时间统计
-            enable_router_stat: 是否启用路由器统计
-            enable_router_case: 是否启用路由器案例分析（仅支持batch_size=1）
+    #     Args:
+    #         prompts: 输入提示列表，每个元素是token序列
+    #         max_gen_len: 最大生成长度
+    #         temperature: 温度参数，控制生成的随机性（0为确定性生成）
+    #         top_p: 核采样参数，控制词汇表截断范围
+    #         enable_time_stat: 是否启用时间统计
+    #         enable_router_stat: 是否启用路由器统计
+    #         enable_router_case: 是否启用路由器案例分析（仅支持batch_size=1）
             
-        Returns:
-            decoded: 解码后的生成文本列表
-            time_cost: 时间成本统计（仅在enable_time_stat=True时返回）
-            layer_stat: 路由器统计信息（仅在enable_router_stat或enable_router_case=True时返回）
-        """
-        # ==================== 参数验证 ====================
-        bsz = len(prompts)  # 批次大小
-        params = self.llama.params
-        assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
+    #     Returns:
+    #         decoded: 解码后的生成文本列表
+    #         time_cost: 时间成本统计（仅在enable_time_stat=True时返回）
+    #         layer_stat: 路由器统计信息（仅在enable_router_stat或enable_router_case=True时返回）
+    #     """
+    #     # ==================== 参数验证 ====================
+    #     bsz = len(prompts)  # 批次大小
+    #     params = self.llama.params
+    #     assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
         
-        # 路由器案例分析仅支持batch_size=1
-        if enable_router_case:
-            assert bsz == 1, "路由器案例分析仅支持batch_size=1"
+    #     # 路由器案例分析仅支持batch_size=1
+    #     if enable_router_case:
+    #         assert bsz == 1, "路由器案例分析仅支持batch_size=1"
         
-        # ==================== 序列长度计算 ====================
-        min_prompt_size = min([len(t) for t in prompts])
-        max_prompt_size = max([len(t) for t in prompts])
-        total_len = min(params.max_seq_len, max_gen_len + max_prompt_size)
+    #     # ==================== 序列长度计算 ====================
+    #     min_prompt_size = min([len(t) for t in prompts])
+    #     max_prompt_size = max([len(t) for t in prompts])
+    #     total_len = min(params.max_seq_len, max_gen_len + max_prompt_size)
 
-        # ==================== Token序列初始化 ====================
-        tokens = jt.full((bsz, total_len), self.tokenizer.pad_id, dtype='int64')
+    #     # ==================== Token序列初始化 ====================
+    #     tokens = jt.full((bsz, total_len), self.tokenizer.pad_id, dtype='int64')
 
-        # ==================== 填充输入提示 ====================
-        for k, t in enumerate(prompts):
-            tokens[k, : len(t)] = jt.array(t, dtype='int64')
-        input_text_mask = tokens != self.tokenizer.pad_id
-        start_pos = min_prompt_size
-        prev_pos = 0
+    #     # ==================== 填充输入提示 ====================
+    #     for k, t in enumerate(prompts):
+    #         tokens[k, : len(t)] = jt.array(t, dtype='int64')
+    #     input_text_mask = tokens != self.tokenizer.pad_id
+    #     start_pos = min_prompt_size
+    #     prev_pos = 0
 
-        # ==================== 统计信息初始化 ====================
-        time_cost = None
-        layer_stat = None
+    #     # ==================== 统计信息初始化 ====================
+    #     time_cost = None
+    #     layer_stat = None
         
-        if enable_time_stat:
-            prefill_time = None
-            end_time = None
-            start_time = time.time()
+    #     if enable_time_stat:
+    #         prefill_time = None
+    #         end_time = None
+    #         start_time = time.time()
             
-        if enable_router_stat:
-            layer_stat = {'token_num': 0}
+    #     if enable_router_stat:
+    #         layer_stat = {'token_num': 0}
             
-        if enable_router_case:
-            layer_stat = {}
+    #     if enable_router_case:
+    #         layer_stat = {}
 
-        # ==================== 自回归生成循环 ====================
-        for cur_pos in range(start_pos, total_len):
-            # Jittor会自动处理精度，无需手动设置混合精度
-            # 根据功能模式选择前向传播方法
-            if enable_router_stat:
-                logits, layer_stat = self.forward_inference_router_stat(tokens[:, prev_pos:cur_pos], prev_pos, layer_stat)
-                layer_stat['token_num'] += bsz * (cur_pos - prev_pos)
-            elif enable_router_case:
-                logits, layer_stat = self.forward_inference_router_case(tokens[:, prev_pos:cur_pos], prev_pos, layer_stat)
-            else:
-                logits = self.forward_inference(tokens[:, prev_pos:cur_pos], prev_pos)
+    #     # ==================== 自回归生成循环 ====================
+    #     for cur_pos in range(start_pos, total_len):
+    #         # Jittor会自动处理精度，无需手动设置混合精度
+    #         # 根据功能模式选择前向传播方法
+    #         if enable_router_stat:
+    #             logits, layer_stat = self.forward_inference_router_stat(tokens[:, prev_pos:cur_pos], prev_pos, layer_stat)
+    #             layer_stat['token_num'] += bsz * (cur_pos - prev_pos)
+    #         elif enable_router_case:
+    #             logits, layer_stat = self.forward_inference_router_case(tokens[:, prev_pos:cur_pos], prev_pos, layer_stat)
+    #         else:
+    #             logits = self.forward_inference(tokens[:, prev_pos:cur_pos], prev_pos)
 
-            # ==================== 时间统计 ====================
-            if enable_time_stat and cur_pos == start_pos:
-                prefill_time = time.time()
+    #         # ==================== 时间统计 ====================
+    #         if enable_time_stat and cur_pos == start_pos:
+    #             prefill_time = time.time()
 
-            # ==================== Token采样 ====================
-            if temperature > 0:
-                probs = torch.softmax(logits / temperature, dim=-1)
-                next_token = sample_top_p(probs, top_p)
-            else:
-                next_token = torch.argmax(logits, dim=-1)
-            next_token = next_token.reshape(-1)
+    #         # ==================== Token采样 ====================
+    #         if temperature > 0:
+    #             probs = torch.softmax(logits / temperature, dim=-1)
+    #             next_token = sample_top_p(probs, top_p)
+    #         else:
+    #             next_token = torch.argmax(logits, dim=-1)
+    #         next_token = next_token.reshape(-1)
 
-            # ==================== Token更新和早停 ====================
-            next_token = torch.where(
-                input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token
-            )
-            tokens[:, cur_pos] = next_token
+    #         # ==================== Token更新和早停 ====================
+    #         next_token = torch.where(
+    #             input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token
+    #         )
+    #         tokens[:, cur_pos] = next_token
             
-            if bsz == 1 and next_token[0] == self.tokenizer.eos_id:
-                break
-            prev_pos = cur_pos
+    #         if bsz == 1 and next_token[0] == self.tokenizer.eos_id:
+    #             break
+    #         prev_pos = cur_pos
 
-        # ==================== 时间成本计算 ====================
-        if enable_time_stat and prefill_time is not None:
-            end_time = time.time()
-            all_cost = end_time - start_time
-            inference_cost = end_time - prefill_time
-            time_cost = {'all_cost': all_cost, 'inference_cost': inference_cost}
+    #     # ==================== 时间成本计算 ====================
+    #     if enable_time_stat and prefill_time is not None:
+    #         end_time = time.time()
+    #         all_cost = end_time - start_time
+    #         inference_cost = end_time - prefill_time
+    #         time_cost = {'all_cost': all_cost, 'inference_cost': inference_cost}
 
-        # ==================== 结果解码 ====================
-        decoded = []
-        for i, t in enumerate(tokens.tolist()):
-            t = t[len(prompts[i]): len(prompts[i]) + max_gen_len]
-            try:
-                t = t[: t.index(self.tokenizer.eos_id)]
-            except ValueError:
-                pass
-            decoded.append(self.tokenizer.decode(t))
+    #     # ==================== 结果解码 ====================
+    #     decoded = []
+    #     for i, t in enumerate(tokens.tolist()):
+    #         t = t[len(prompts[i]): len(prompts[i]) + max_gen_len]
+    #         try:
+    #             t = t[: t.index(self.tokenizer.eos_id)]
+    #         except ValueError:
+    #             pass
+    #         decoded.append(self.tokenizer.decode(t))
 
-        # ==================== 路由器案例分析处理 ====================
-        if enable_router_case and layer_stat is not None:
-            for i, t in enumerate(tokens.tolist()):
-                t0 = t[:]
-                t = t[len(prompts[i]): len(prompts[i]) + max_gen_len]
-                try:
-                    t0 = t0[: t0.index(self.tokenizer.eos_id)]
-                    t = t[: t.index(self.tokenizer.eos_id)]
-                except ValueError:
-                    pass
+    #     # ==================== 路由器案例分析处理 ====================
+    #     if enable_router_case and layer_stat is not None:
+    #         for i, t in enumerate(tokens.tolist()):
+    #             t0 = t[:]
+    #             t = t[len(prompts[i]): len(prompts[i]) + max_gen_len]
+    #             try:
+    #                 t0 = t0[: t0.index(self.tokenizer.eos_id)]
+    #                 t = t[: t.index(self.tokenizer.eos_id)]
+    #             except ValueError:
+    #                 pass
                 
-                # 单词级别案例分析
-                words = [self.tokenizer.decode([ti]) for ti in t0]
-                if layer_stat and 0 in layer_stat and 'weights' in layer_stat[0]:
-                    layer_stat['words'] = words
-                    assert len(words) == layer_stat[0]['weights'].shape[1]
+    #             # 单词级别案例分析
+    #             words = [self.tokenizer.decode([ti]) for ti in t0]
+    #             if layer_stat and 0 in layer_stat and 'weights' in layer_stat[0]:
+    #                 layer_stat['words'] = words
+    #                 assert len(words) == layer_stat[0]['weights'].shape[1]
 
-        # ==================== 返回结果 ====================
-        if enable_time_stat and enable_router_stat:
-            return decoded, time_cost, layer_stat
-        elif enable_time_stat:
-            return decoded, time_cost
-        elif enable_router_stat or enable_router_case:
-            return decoded, layer_stat
-        else:
-            return decoded
+    #     # ==================== 返回结果 ====================
+    #     if enable_time_stat and enable_router_stat:
+    #         return decoded, time_cost, layer_stat
+    #     elif enable_time_stat:
+    #         return decoded, time_cost
+    #     elif enable_router_stat or enable_router_case:
+    #         return decoded, layer_stat
+    #     else:
+    #         return decoded
 
-    # 为了保持向后兼容，保留原有的方法名作为包装器
-    @torch.inference_mode()
-    def generate(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
-        """标准文本生成"""
-        return self.generate_unified(prompts, max_gen_len, temperature, top_p)
+    # # 为了保持向后兼容，保留原有的方法名作为包装器
+    # @torch.inference_mode()
+    # def generate(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
+    #     """标准文本生成"""
+    #     return self.generate_unified(prompts, max_gen_len, temperature, top_p)
 
-    @torch.inference_mode()
-    def generate_time(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75, time_gen=False):
-        """带时间统计的文本生成"""
-        if time_gen:
-            return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_time_stat=True)
-        else:
-            return self.generate_unified(prompts, max_gen_len, temperature, top_p)
+    # @torch.inference_mode()
+    # def generate_time(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75, time_gen=False):
+    #     """带时间统计的文本生成"""
+    #     if time_gen:
+    #         return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_time_stat=True)
+    #     else:
+    #         return self.generate_unified(prompts, max_gen_len, temperature, top_p)
 
-    @torch.inference_mode()
-    def generate_router_stat(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
-        """带路由器统计的文本生成"""
-        return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_router_stat=True)
+    # @torch.inference_mode()
+    # def generate_router_stat(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
+    #     """带路由器统计的文本生成"""
+    #     return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_router_stat=True)
 
-    @torch.inference_mode()
-    def generate_router_case(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
-        """带路由器案例分析的文本生成"""
-        return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_router_case=True)
+    # @torch.inference_mode()
+    # def generate_router_case(self, prompts, max_gen_len=256, temperature=0.1, top_p=0.75):
+    #     """带路由器案例分析的文本生成"""
+    #     return self.generate_unified(prompts, max_gen_len, temperature, top_p, enable_router_case=True)
