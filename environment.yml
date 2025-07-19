@@ -7,20 +7,14 @@ dependencies:
   - python=3.8
   - libstdcxx-ng=12.2.0
   - libgcc-ng
-  - openmpi=4.1.6
-  - mpi=1.0=openmpi
-  - mpi4py
   - numpy
-  - tqdm
-  - # 可选：让 conda 管理 CUDA
-    # cudatoolkit=11.8
-  - cmake         # 用于编译 jittor_core
-  - ninja         # 用于加速编译
+  - cmake
 
-  - pip
+  - pytorch      
+  - cpuonly     
+
   - pip:
-      - jittor==1.3.9.14
-      - torch==2.0.1
+      - jittor
       - tensorboardX
       - modelscope
       - tiktoken

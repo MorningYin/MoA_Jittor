@@ -31,11 +31,12 @@ def download_llama_model():
     moa_dir = find_moa_jittor_dir()
     print(f"找到MoA_Jittor目录: {moa_dir}")
     
-    # 设置下载目录
-    local_dir = moa_dir / "Pre_trained_Models" / "LLaMA"
+    # 设置下载目录到数据盘
+    data_dir = Path("/HOME/thzskj_wfeng34/thzskj_wfeng34_1/MoA_Jittor/Pre_trained_Models")
+    local_dir = data_dir / "LLaMA"
     local_dir.mkdir(parents=True, exist_ok=True)
     
-    print(f"开始下载模型到: {local_dir}")
+    print(f"开始下载模型到数据盘: {local_dir}")
     
     try:
         # 下载original子目录下的所有文件
@@ -53,6 +54,16 @@ def download_llama_model():
             if file_path.is_file():
                 file_size = file_path.stat().st_size
                 print(f"  {file_path} ({file_size} bytes)")
+        
+        # 创建软链接到项目目录
+        project_model_dir = moa_dir / "Pre_trained_Models" / "LLaMA"
+        project_model_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 如果软链接不存在，创建软链接
+        link_path = project_model_dir / "original"
+        if not link_path.exists():
+            link_path.symlink_to(local_dir / "original")
+            print(f"已创建软链接: {link_path} -> {local_dir / 'original'}")
         
         return True
         

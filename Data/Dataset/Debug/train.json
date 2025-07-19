@@ -1,0 +1,134 @@
+[
+    {
+        "instruction": "Please answer the following question with true or false, question: can you go to jail for civil contempt of court?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you hit the backboard on a free throw?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can i send a letter in the mail without a return address?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to pass on a solid yellow line?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do red yellow and orange peppers taste different?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has maroon 5 ever performed at the super bowl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you score an own goal from a direct free kick?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does las vegas have a pro football team?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a fifth season of mom?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be a season 3 of wrecked?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the five heartbeats based on a real group?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you remove venom glands from a snake?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the statue of liberty on new jersey?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is i know why the caged bird sings a memoir?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was varsity blues based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is season 2 of attack on titan out?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are liquor stores open in oklahoma on 4th of july?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the tower of terror still open in florida?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the 2008 hulk part of the mcu?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is cabo the same as cabo san lucas?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are two members of little big town married to each other?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the series bull based on dr phil?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    }
+]
