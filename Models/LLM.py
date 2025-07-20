@@ -48,14 +48,14 @@ class TransformerBlock(nn.Module):
         
         if args.swi_x == 0:
             # 直接用 Linear 做路由
-            self.adapter_type_router = nn.Linear(args.dim, self.adapter_type).float16()
+            self.adapter_type_router = nn.Linear(args.dim, self.adapter_type)
         elif args.swi_x > 0:
             # 使用两层 MLP(或 SwiGLU) 做更复杂的路由
             self.adapter_type_router = Router(args.dim, self.adapter_type * args.swi_x, self.adapter_type)
 
     def execute(self, x: jt.Var, start_pos: int, freqs_cis: jt.Var, mask: Optional[jt.Var]):
         # 计算类型权重
-        type_weights = jt.sigmoid(self.adapter_type_router(x)).astype(x.dtype)
+        type_weights = jt.sigmoid(self.adapter_type_router(x))
         type_idx = 0
         h = x + self.attention(
             self.attention_norm(x),
@@ -79,9 +79,9 @@ class TransformerBlock(nn.Module):
 
         # 避免 float16 溢出
         out = jt.clamp(out, -65500, 65500)
-        return out.astype(x.dtype)
+        return out
 
-class Transformer(nn.Module):
+class LLaMA(nn.Module):
     def __init__(self, params: ModelArgs):
         """初始化 Transformer 主干模型"""
         super().__init__()
@@ -91,7 +91,7 @@ class Transformer(nn.Module):
         self.vocab_size = params.vocab_size
         self.n_layers = params.n_layers
         self.tok_embeddings = nn.Embedding(
-            params.vocab_size, params.dim, dtype='float16'
+            params.vocab_size, params.dim
         )
         
         print(f'================================================== 微调模块细节 ====================================================')
@@ -121,7 +121,7 @@ class Transformer(nn.Module):
         self.norm = RMSNorm(params.dim, eps=params.norm_eps)
         self.output = nn.Linear(
             params.dim, params.vocab_size, bias=False
-        ).float16()
+        )
 
         # 预计算旋转位置编码常数
         self.freqs_cis = precompute_freqs_cis(
@@ -131,10 +131,28 @@ class Transformer(nn.Module):
             bool(params.use_scaled_rope),
         )
 
-    @inference_mode_jt
+        self.get_trainable_params()
+
+    def get_trainable_params(self):
+        """设置模型的可训练参数"""
+        # 冻结所有参数
+        for name, para in self.named_parameters():
+            para.stop_grad()
+
+        # 选择性解冻参数
+        for name, para in self.named_parameters():
+            # 偏置项微调
+            if name.startswith("llama."):
+                if self.model_args.w_bias:
+                    if 'norm' in name or 'bias' in name:
+                        para.start_grad()
+                        
+                # 参数高效微调参数
+                if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name:
+                    para.start_grad()
+
     def execute(self, tokens: jt.Var, start_pos: int):
-        shape = cast(Tuple[int, int], tokens.shape())
-        _bsz, seqlen = shape
+        _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         freqs_cis = self.freqs_cis[start_pos : start_pos + seqlen]
 
@@ -147,4 +165,4 @@ class Transformer(nn.Module):
             h = layer(h, start_pos, freqs_cis, mask)
         h = self.norm(h)
         output = self.output(h[:, -1, :])  # only compute last logits
-        return output.astype(jt.float32)
+        return output

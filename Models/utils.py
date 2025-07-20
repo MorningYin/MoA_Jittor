@@ -1,7 +1,6 @@
 import jittor as jt
 import math
 from typing import Tuple
-import functools
 
 
 def apply_scaling(freqs: jt.Var):
@@ -110,15 +109,18 @@ def repeat_kv(x: jt.Var, n_rep: int) -> jt.Var:
     )
 
 
-def inference_mode_jt(fn):
-    """PyTorch inference_mode 的最小 Jittor 版"""
-    @functools.wraps(fn)
-    def wrapper(self, *args, **kwargs):
-        was_training = getattr(self, "training", False)
-        self.eval()
-        with jt.no_grad():
-            out = fn(self, *args, **kwargs)
-        if was_training:
-            self.train()
-        return out
-    return wrapper
+def sample_top_p(probs, p):
+    # 按概率从大到小排序
+    probs_sort, probs_idx = jt.sort(probs, dim=-1, descending=True)
+    # 累加概率
+    probs_sum = jt.cumsum(probs_sort, dim=-1)
+    # 生成mask，超过p的部分置零
+    mask = (probs_sum - probs_sort) > p
+    probs_sort = probs_sort * (~mask)
+    # 归一化
+    probs_sort = probs_sort / (probs_sort.sum(dim=-1, keepdims=True) + 1e-8)
+    # 多项式采样
+    next_token = jt.multinomial(probs_sort, 1)
+    # 还原到原始索引
+    next_token = jt.gather(probs_idx, -1, next_token)
+    return next_token
