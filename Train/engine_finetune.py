@@ -140,8 +140,7 @@ def train_one_epoch(model: LLaMA_adapter,
             adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
         
         # 前向传播和损失计算
-        with jt.flag_scope(amp_level=1):
-            c_loss, m_loss = model(examples, labels, prompt_mask)
+        c_loss, m_loss = model(tokens=examples, labels=labels)
         
         # 损失组合
         loss = c_loss + m_loss * 0   # 只使用分类损失
@@ -156,7 +155,6 @@ def train_one_epoch(model: LLaMA_adapter,
         if (data_iter_step + 1) % accum_iter == 0:
             optimizer.step()
             optimizer.zero_grad()
-            model.float16()
 
         # GPU同步
         jt.sync_all(True)
@@ -192,8 +190,7 @@ def train_one_epoch(model: LLaMA_adapter,
 
             with jt.no_grad():
                 for val_examples, val_labels, val_prompt_mask in val_loader:
-                    with jt.flag_scope(amp_level=1):
-                        val_c_loss, val_m_loss = model(val_examples, val_labels, val_prompt_mask)
+                    val_c_loss, val_m_loss = model(val_examples, val_labels, val_prompt_mask)
                     val_loss += val_c_loss + val_m_loss * 0  # 与训练一致，只使用分类损失
             
             val_loss = val_loss / len(val_loader)

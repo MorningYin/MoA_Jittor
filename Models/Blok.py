@@ -4,13 +4,62 @@ from jittor import nn
 F = nn  # type: ignore
 from typing import Optional
 from .ModelArgs import ModelArgs
-from .utils import apply_rotary_emb
-from .utils import repeat_kv
+from .utils import apply_rotary_emb, repeat_kv
 from typing import cast
+from jittor import init
 
+
+class Module(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def train(self):
+        ''' 将模块设置为评估training模式。 '''
+        def callback(parents, k, v, n):
+            if isinstance(v, Module):
+                v.is_train = True
+                if k == 'attention':
+                    v.clear_cache()
+        self.dfs([], None, callback, None)
+
+        # backup stop grad or not
+        if hasattr(self, "backup_grad_state"):
+            for p in self.parameters():
+                if id(p) in self.backup_grad_state and self.backup_grad_state[id(p)]:
+                    p.start_grad()
+        return self
+
+    def eval(self):
+        ''' 将模块设置为评估eval模式。 '''
+        def callback(parents, k, v, n):
+            if isinstance(v, Module):
+                v.is_train = False
+                if k == 'attention':
+                    v.set_cache()
+        self.dfs([], None, callback, None)
+
+        # backup stop grad or not
+        if not hasattr(self, "backup_grad_state"):
+            self.backup_grad_state = {}
+        for p in self.parameters():
+            if id(p) not in self.backup_grad_state:
+                self.backup_grad_state[id(p)] = not p.is_stop_grad()
+            p.stop_grad()
+        return self
+    
+    def init(self):
+        ''' 将模块设置为评估eval模式。 '''
+        def callback(parents, k, v, n):
+            if isinstance(v, Module):
+                v.init_weights()
+        self.dfs([], None, callback, None)
+
+    def init_weights(self):
+        return
+    
 
 # Jittor 版 RMSNorm
-class RMSNorm(nn.Module):
+class RMSNorm(Module):
     """均方根归一化，相比LayerNorm更高效"""
     
     def __init__(self, dim: int, eps: float = 1e-6):
@@ -29,7 +78,7 @@ class RMSNorm(nn.Module):
         return output * self.weight
 
 
-class MOELoraLayer(nn.Module):
+class MOELoraLayer(Module):
     """混合专家LoRA层，结合LoRA和MoE的适配器层"""
     
     def __init__(self, input_dim, output_dim, r, expert_num, lora_alpha:float=8, hydra=False):
@@ -42,32 +91,46 @@ class MOELoraLayer(nn.Module):
 
         # 单专家模式（标准LoRA）
         if expert_num == 1:
-            self.lora_A = nn.Linear(input_dim, r, bias=False).float16()
-            self.lora_B = nn.Linear(r, output_dim, bias=False).float16()
+            self.lora_A = nn.Linear(input_dim, r, bias=False)
+            self.lora_B = nn.Linear(r, output_dim, bias=False)
             nn.init.constant_(self.lora_B.weight, 0.0)
 
         # 多专家模式（MoE LoRA）
         elif expert_num > 1:
-            self.router = nn.Linear(input_dim, expert_num, bias=False).float16()
+            self.router = nn.Linear(input_dim, expert_num, bias=False)
             
             # A矩阵设置
             if hydra:
-                self.lora_A = nn.Linear(input_dim, r, bias=False).float16()
+                self.lora_A = nn.Linear(input_dim, r, bias=False)
             else:
                 self.lora_A_l = nn.ModuleList()
                 for i in range(expert_num):
-                    self.lora_A_l.append(nn.Linear(input_dim, r, bias=False).float16())
+                    self.lora_A_l.append(nn.Linear(input_dim, r, bias=False))
                 
             # B矩阵设置
             self.lora_B_l = nn.ModuleList()
             for i in range(expert_num):
-                self.lora_B_l.append(nn.Linear(r, output_dim, bias=False).float16())
+                self.lora_B_l.append(nn.Linear(r, output_dim, bias=False))
 
             # 初始化B矩阵为零
             for linear in self.lora_B_l:
                 nn.init.constant_(linear.weight, 0.0)
         else:
             raise Exception("The number of Experts is wrong")
+
+    def init_weights(self):
+        if self.expert_num == 1:
+            self.lora_A.weight = init.invariant_uniform((self.lora_A.out_features, self.lora_A.in_features), "float32")
+            nn.init.constant_(self.lora_B.weight, 0.0)
+        elif self.expert_num > 1:
+            if self.hydra:
+                self.lora_A.weight = init.invariant_uniform((self.lora_A.out_features, self.lora_A.in_features), "float32")
+            else:
+                for i in range(self.expert_num):
+                    self.lora_A_l[i].weight = init.invariant_uniform((self.lora_A_l[i].out_features, self.lora_A_l[i].in_features), "float32")
+            
+            for i in range(self.expert_num):
+                nn.init.constant_(self.lora_B_l[i].weight, 0.0)
     
     def params_count(self):
         """计算LoRA适配器的参数数量"""
@@ -123,7 +186,7 @@ class MOELoraLayer(nn.Module):
         return result
     
 
-class PAdapterLayer(nn.Module):
+class PAdapterLayer(Module):
     """并行适配器层，支持单专家和多专家模式"""
     
     def __init__(self, hidden_size, adapter_size, expert_num:int=1, hydra:bool=False):
@@ -160,9 +223,9 @@ class PAdapterLayer(nn.Module):
         else:
             raise Exception("The number of Experts is wrong")
         
-        self.reset_parameters()
+        self.init_weights()
 
-    def reset_parameters(self):
+    def init_weights(self):
         """重置和初始化适配器参数"""
         if self.expert_num ==1:
             nn.init.xavier_uniform_(self.down_proj.weight, gain=1e-4)
@@ -212,7 +275,7 @@ class PAdapterLayer(nn.Module):
         return result
 
 
-class Router(nn.Module):
+class Router(Module):
     """SwiGLU路由器，用于MoA架构中的适配器类型选择"""
     
     def __init__(
@@ -224,11 +287,19 @@ class Router(nn.Module):
         super().__init__()
 
         # SwiGLU结构组件
-        self.w1 = nn.Linear(in_dim, hidden_dim).float16()
-        self.w2 = nn.Linear(hidden_dim, out_dim).float16()
-        self.w3 = nn.Linear(in_dim, hidden_dim).float16()
+        self.w1 = nn.Linear(in_dim, hidden_dim)
+        self.w2 = nn.Linear(hidden_dim, out_dim)
+        self.w3 = nn.Linear(in_dim, hidden_dim)
         
         # 偏置初始化
+        nn.init.constant_(self.w1.bias, 0)
+        nn.init.constant_(self.w2.bias, 0)
+        nn.init.constant_(self.w3.bias, 0)
+
+    def init_weights(self):
+        self.w1.weight = init.invariant_uniform((self.w1.out_features, self.w1.in_features), "float32")
+        self.w2.weight = init.invariant_uniform((self.w2.out_features, self.w2.in_features), "float32")
+        self.w3.weight = init.invariant_uniform((self.w3.out_features, self.w3.in_features), "float32")
         nn.init.constant_(self.w1.bias, 0)
         nn.init.constant_(self.w2.bias, 0)
         nn.init.constant_(self.w3.bias, 0)
@@ -238,7 +309,7 @@ class Router(nn.Module):
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
     
 
-class FeedForward(nn.Module):
+class FeedForward(Module):
     def __init__(
         self,
         dim: int,
@@ -249,14 +320,15 @@ class FeedForward(nn.Module):
         w_lora=False
     ):
         super().__init__()
+        self.args = args
         hidden_dim = int(2 * hidden_dim / 3)
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
-        self.w1 = nn.Linear(dim, hidden_dim, bias=args.w_bias).float16()
-        self.w2 = nn.Linear(hidden_dim, dim, bias=args.w_bias).float16()
-        self.w3 = nn.Linear(dim, hidden_dim, bias=args.w_bias).float16()
+        self.w1 = nn.Linear(dim, hidden_dim, bias=args.w_bias)
+        self.w2 = nn.Linear(hidden_dim, dim, bias=args.w_bias)
+        self.w3 = nn.Linear(dim, hidden_dim, bias=args.w_bias)
         if args.w_bias:
             nn.init.constant_(self.w1.bias, 0)
             nn.init.constant_(self.w2.bias, 0)
@@ -272,6 +344,12 @@ class FeedForward(nn.Module):
 
             if 'FFN_DOWN' in self.lora_targets:
                 self.lora_DOWN = MOELoraLayer(hidden_dim, args.dim, args.lora_rank, args.expert_num, args.lora_alpha, args.hydra_moe)
+
+    def init_weights(self):
+        if self.args.w_bias:
+            nn.init.constant_(self.w1.bias, 0)
+            nn.init.constant_(self.w2.bias, 0)
+            nn.init.constant_(self.w3.bias, 0)
 
     def execute(self, x: jt.Var, type_weight: Optional[jt.Var]):
         if self.w_lora:
@@ -297,7 +375,7 @@ class FeedForward(nn.Module):
             return self.w2(F.silu(self.w1(x)) * self.w3(x))
 
 
-class Attention(nn.Module):
+class Attention(Module):
     """多头注意力机制，支持分组查询注意力、LoRA适配器和Prompt Tuning"""
     
     def __init__(self, args: ModelArgs, w_lora=False, w_prompt=False):
@@ -312,10 +390,10 @@ class Attention(nn.Module):
         self.head_dim = args.dim // args.n_heads
 
         # 基础线性变换
-        self.wq = nn.Linear(args.dim, args.n_heads * self.head_dim, bias=args.w_bias).float16()
-        self.wk = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False).float16()
-        self.wv = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False).float16()
-        self.wo = nn.Linear(args.n_heads * self.head_dim, args.dim, bias=args.w_bias).float16()
+        self.wq = nn.Linear(args.dim, args.n_heads * self.head_dim, bias=args.w_bias)
+        self.wk = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False)
+        self.wv = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False)
+        self.wo = nn.Linear(args.n_heads * self.head_dim, args.dim, bias=args.w_bias)
         
         # 偏置初始化
         if args.w_bias:
@@ -338,24 +416,35 @@ class Attention(nn.Module):
         # Prompt Tuning设置
         self.w_prompt = w_prompt
         if self.w_prompt:
-            self.prompt = nn.Embedding(args.expert_num * args.prompt_len, args.dim).float16()
-            self.prompt_gate = nn.Parameter(jt.zeros((1, self.n_local_heads, 1, 1), dtype='float16'))
+            self.prompt = nn.Embedding(args.expert_num * args.prompt_len, args.dim)
+            self.prompt_gate = nn.Parameter(jt.zeros((1, self.n_local_heads, 1, 1)))
             if self.args.expert_num >1:
-                self.prompt_router = nn.Linear(args.dim, self.args.expert_num).float16()
+                self.prompt_router = nn.Linear(args.dim, self.args.expert_num)
                 
         # KV缓存设置
         self.cache_k = None
         self.cache_v = None
+    
+    def init_weights(self):
+        if self.w_prompt:
+            self.prompt.weight = init.gauss([self.prompt.num_embeddings, self.prompt.embedding_dim], 'float32')
+            self.prompt_gate = nn.Parameter(jt.zeros((1, self.n_local_heads, 1, 1)))
+            if self.args.expert_num > 1:
+                self.prompt_router.weight = init.invariant_uniform((self.prompt_router.out_features, self.prompt_router.in_features), "float32")
 
-    def train(self, mode: bool = True):
-        """训练模式切换方法"""
-        if mode:
-            self.cache_k = None
-            self.cache_v = None
-        else:
-            self.cache_k = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.n_local_kv_heads, self.head_dim))
-            self.cache_v = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.n_local_kv_heads, self.head_dim))
-        return super().train()
+        if self.args.w_bias:
+            nn.init.constant_(self.wq.bias, 0)
+            nn.init.constant_(self.wo.bias, 0)
+
+
+    def set_cache(self):
+        self.cache_k = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.n_local_kv_heads, self.head_dim))
+        self.cache_v = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.n_local_kv_heads, self.head_dim))
+        # print(self.cache_k.shape, self.cache_v.shape)
+
+    def clear_cache(self):
+        self.cache_k = None
+        self.cache_v = None
 
     def execute(self, x: jt.Var, start_pos: int, freqs_cis: jt.Var, mask: Optional[jt.Var], type_weight: Optional[jt.Var]):
         """前向传播方法"""

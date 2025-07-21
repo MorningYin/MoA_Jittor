@@ -7,6 +7,7 @@ from .LLM import LLaMA
 from .Tokenizer import Tokenizer
 from .ModelArgs import ModelArgs
 from .utils import sample_top_p
+from .Blok import Module
 
 import jittor as jt
 import jittor.nn as nn
@@ -17,7 +18,7 @@ def to_float16(raw_sd):
         raw_sd[k] = v.float16()
 
 
-class LLaMA_adapter(nn.Module):
+class LLaMA_adapter(Module):
 
     def __init__(self, args, llama_ckpt_dir, llama_tokenizer):
         """初始化LLaMA适配器模型"""
@@ -65,7 +66,7 @@ class LLaMA_adapter(nn.Module):
         assert model_args.vocab_size == self.tokenizer.n_words
         
         self.llama = LLaMA(model_args)
-        self.llama = self.llama.float16()
+        self.llama = self.llama.float_auto()
         
         print(f'================================================== 加载预训练权重 ====================================================')
         # 加载预训练权重
@@ -91,9 +92,9 @@ class LLaMA_adapter(nn.Module):
         #        print(f"Trainable param: {name}, {param.shape}, {param.dtype}")
         
     def execute(self, tokens, start_pos: int = 0, labels : jt.Var = None):
-        """模型前向传播（训练模式）"""
+        """模型前向传播"""
 
-        if self.training:
+        if self.is_train:
             assert (labels is not None) and (start_pos == 0), "在训练模式下，labels不能为空，且start_pos必须为0"
 
             output = self.llama(tokens, start_pos=0)
@@ -129,7 +130,7 @@ class LLaMA_adapter(nn.Module):
             decoded: 解码后的生成文本列表
         """
 
-        assert not self.training, "在推理模式下，模型必须处于评估模式"
+        assert not self.is_train, "在推理模式下，模型必须处于评估模式"
 
         with jt.no_grad():
             # ==================== 参数验证和初始化 ====================

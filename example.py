@@ -16,12 +16,13 @@ import fire
 from tqdm import tqdm
 import math
 import jittor as jt
-from argparse import Namespace
-
 
 from Models.LLaMA_Adapter import LLaMA_adapter
 from Models.ModelArgs import ModelArgs
 from Utils.misc import init_distributed_mode
+
+jt.flags.auto_mixed_precision_level = 1
+
 
 # 预定义的提示模板字典
 PROMPT_DICT = {
@@ -64,18 +65,14 @@ def load(llama_path, adapter_path: str, max_seq_len=None, max_batch_size: int = 
     print(f'Loading LLaMA-Adapter from {adapter_path}')
     adapter_ckpt = jt.load(adapter_path)
 
-    # 加载adapter参数配置
-    with open(os.path.join(os.path.dirname(adapter_path), 'adapter_params.json'), 'r') as f:
-        adapter_params = json.loads(f.read())
+    adapter_params = adapter_ckpt['args']
     
     # 如果指定了新的最大序列长度，则更新配置
-    if max_seq_len and (max_seq_len > adapter_params['max_seq_len']):
-        adapter_params['max_seq_len'] = max_seq_len
+    if max_seq_len and (max_seq_len > adapter_params.max_seq_len):
+        adapter_params.max_seq_len = max_seq_len
 
-    adapter_params['max_batch_size'] = max_batch_size
-    model_args: ModelArgs = ModelArgs(
-        **adapter_params
-    )
+    adapter_params.max_batch_size = max_batch_size
+    model_args: ModelArgs = adapter_params
 
     llama_type = ''
     llama_ckpt_dir = os.path.join(llama_path, llama_type)
@@ -83,7 +80,7 @@ def load(llama_path, adapter_path: str, max_seq_len=None, max_batch_size: int = 
     model = LLaMA_adapter(model_args, llama_ckpt_dir, llama_tokenzier_path)
 
     # 加载adapter权重到模型
-    load_result = model.load_state_dict(adapter_ckpt, strict=False)
+    load_result = model.load_state_dict(adapter_ckpt['trainable_params'])
     
     # # 统计可训练参数数量并保存
     # trainable_params_sum = 0
@@ -98,7 +95,7 @@ def load(llama_path, adapter_path: str, max_seq_len=None, max_batch_size: int = 
     #     f.write(json.dumps(trainable, ensure_ascii=False))
 
     # 检查是否有意外的键
-    assert len(load_result.unexpected_keys) == 0, f"Unexpected keys: {load_result.unexpected_keys}"
+    # assert len(load_result.unexpected_keys) == 0, f"Unexpected keys: {load_result.unexpected_keys}"
 
     print(f"Loaded in {time.time() - start_time:.2f} seconds")
     # return model.to(device)
@@ -112,10 +109,10 @@ def split_list(lst, size):
     return [lst[i:i+size] for i in range(0, len(lst), size)]
 
 def main(
-    ckpt_dir: str,          # LLaMA基础模型目录
-    adapter_path: str,       # Adapter权重文件路径
-    data_path: str,          # 输入数据文件路径
-    save_path:str,           # 输出结果保存路径
+    ckpt_dir: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',          # LLaMA基础模型目录
+    adapter_path: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/commonsense_15k/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr1e-4_bs16_commonsense_15k_seed1234/checkpoint-0.pth',       # Adapter权重文件路径
+    data_path: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/Data/Dataset/commonsense_15k/test.json',          # 输入数据文件路径
+    save_path:str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/Test',           # 输出结果保存路径
     temperature: float = 0.1, # 生成温度参数
     top_p: float = 0.75,     # top-p采样参数
     max_seq_len = None,      # 最大序列长度
@@ -131,13 +128,22 @@ def main(
     - QMSum: 会议摘要数据集
     - 新闻摘要数据集
     """
-    # 设置模型并行环境
-    local_rank, world_size = init_distributed_mode(Namespace())
-    if local_rank > 0:
-        sys.stdout = open(os.devnull, "w")
+
+    jt.flags.use_cuda = 1
+
+    local_rank = 0
+    world_size = 1
+    
+    if jt.in_mpi:
+        # 设置模型并行环境
+        local_rank = jt.rank
+        world_size = jt.world_size
+        if local_rank > 0:
+            sys.stdout = open(os.devnull, "w")
 
     # 加载模型
     model = load(ckpt_dir, adapter_path, max_seq_len=max_seq_len, max_batch_size=max_batch_size)
+    model.float_auto()
     model.eval()
 
     # 加载和处理数据
@@ -182,11 +188,6 @@ def main(
     #     max_seq_len = generate_params['max_seq_len']
     max_seq_len = model.llama.params.max_seq_len
     
-    # 创建输出目录
-    directory = os.path.dirname(save_path)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
     # 批量生成文本
     for batch in tqdm(batchs):
         prompts = []
@@ -225,19 +226,26 @@ def main(
         # 使用模型生成文本
         results = model.generate(prompts, max_gen_len=max_gen_len, temperature=temperature, top_p=top_p)
 
-        # 保存生成结果
-        with open(save_path, 'a', encoding='utf-8') as f:
-            for i,result in enumerate(results):
-                tmp_result = {}
-                tmp_result['generate'] = result          # 生成的文本
-                tmp_result['output'] = batch[i]['output'] # 标准答案
-                tmp_result['input'] = batch[i]['input']   # 输入文本
-                tmp_result['instruction'] = batch[i]['instruction'] # 指令
-                tmp_result['answer'] = batch[i].get('answer','') # 答案（如果有）
-                json_data = json.dumps(tmp_result, ensure_ascii=False)
-                f.write(json_data + '\n')
-                # print(result)
-                # print("\n==================================\n")
+        # 构建保存路径
+        adapter_name = os.path.basename(os.path.dirname(adapter_path))
+        data_name    = os.path.basename(os.path.dirname(data_path))
+        filename = f"{adapter_name}_{data_name}.txt"
+        final_save_path = os.path.join(save_path, filename)
+        
+        # 创建输出目录
+        os.makedirs(os.path.dirname(final_save_path), exist_ok=True)
+
+        # 然后打开文件（如果不存在就新建，如果存在则追加）
+        with open(final_save_path, "a", encoding="utf-8") as f:
+            for i, result in enumerate(results):
+                tmp = {
+                    'generate':      result,
+                    'output':        batch[i]['output'],
+                    'input':         batch[i]['input'],
+                    'instruction':   batch[i]['instruction'],
+                    'answer':        batch[i].get('answer', '')
+                }
+                f.write(json.dumps(tmp, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

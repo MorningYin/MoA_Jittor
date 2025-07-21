@@ -1,22 +1,25 @@
 import jittor as jt
 from Utils.misc import setup_for_distributed, get_rank, get_world_size, add_weight_decay, save_model
 from Models.LLaMA_Adapter import LLaMA_adapter
-from Data.Dataset import FinetuneDataset
+from Data.MathDataset import MathDataset
 from Utils.EarlyStopper import EarlyStopper
 
 import argparse
-import sys
 import datetime
 import json
 import numpy as np
 import os
 import time
+from typing import List
+
 from pathlib import Path
 from Train.engine_finetune import train_one_epoch
 from tensorboardX import SummaryWriter
 
+
 jt.flags.log_silent = 1
 jt.flags.auto_mixed_precision_level = 1
+jt.flags.use_fuse_transpose = False
 
 def str2bool(v):
     """字符串转布尔值"""
@@ -28,6 +31,7 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 def get_args_parser():
     """定义命令行参数"""
@@ -66,16 +70,16 @@ def get_args_parser():
     # Adapter路由参数
     parser.add_argument('--swi_x', default=0, type=int, help='适配器路由参数')
 
+    # 数据集参数
+    parser.add_argument("--data_path", default="", type=str, help="训练数据路径")
+    parser.add_argument("--val_data_path", default="", type=str, help="验证数据路径")
+
     # 优化器参数
     parser.add_argument('--weight_decay', type=float, default=0.05, help='权重衰减')
     parser.add_argument('--lr', type=float, default=None, metavar='LR', help='学习率')
     parser.add_argument('--blr', type=float, default=1e-3, metavar='LR', help='基础学习率')
     parser.add_argument('--min_lr', type=float, default=0., metavar='LR', help='最小学习率')
     parser.add_argument('--warmup_epochs', type=float, default=1, metavar='N', help='预热轮数')
-
-    # 数据集参数
-    parser.add_argument("--data_path", default="", type=str, help="训练数据路径")
-    parser.add_argument("--val_data_path", default="", type=str, help="验证数据路径")
 
     # 输出和设备参数
     parser.add_argument('--output_dir', default='./output', help='输出目录')
@@ -85,8 +89,127 @@ def get_args_parser():
 
     return parser
 
-def main(args):
+
+def prepare_args(data_path):
+    default_cli = [
+        '--llama_path', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',
+        '--data_path',  data_path,
+        '--device', 'cuda',
+        '--batch_size', '16',
+        '--epochs', '5',
+        '--max_seq_len', '512',
+        '--lr', '5e-5',
+        '--accum_iter', '1',
+        '--lora_layers', '0-32',
+        '--lora_rank', '8',
+        '--lora_targets', 'Q,K,V,O',
+        '--prompt_layers', '0-32',
+        '--p_adapter_layers', '0-32',
+        '--swi_x', '1',
+        '--seed', '1236',
+        '--output_dir', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/All/'+data_path.split('/')[-2],
+        '--early_stop_patience', '5'
+    ]
+    args = get_args_parser().parse_args(default_cli)
+
+    if args.output_dir:
+        Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+
+    return args
+
+def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
+    llama_tokenzier_path = os.path.join(args.llama_path, 'tokenizer.model')
+    # 创建数据集
+    dataset_train = MathDataset(
+        data_paths=[args.data_path for args in args_list], 
+        tokenizer_path=llama_tokenzier_path, 
+        max_tokens=args.max_seq_len, 
+        partition="train",
+        val_ratio=0.1,
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True,
+    )
+    dataset_train.datainit()
+
+    dataset_val = MathDataset(
+        data_paths=[args.data_path for args in args_list], 
+        tokenizer_path=llama_tokenzier_path, 
+        max_tokens=args.max_seq_len, 
+        partition="val",
+        val_ratio=0.1,
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True,
+    )
+    dataset_val.datainit()
+
+    # 配置优化器
+    param_groups = add_weight_decay(model, args.weight_decay)
+    optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
+
+    # 配置日志
+    args.log_dir = os.path.join(args.output_dir, 'log')
+    
+    if get_rank() == 0 and args.log_dir is not None:
+        os.makedirs(args.log_dir, exist_ok=True)
+        log_writer = SummaryWriter(log_dir=args.log_dir)
+    else:
+        log_writer = None
+
+    # 配置早停
+    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
+
+    # 开始训练
+    print(f"============================================ 开始训练  ==================================================")
+    start_time = time.time()
+    
+    for epoch in range(args.start_epoch, args.epochs):
+        # 训练一个epoch
+        train_stats, val_stats, early_stopped = train_one_epoch(
+            model=model,
+            data_loader=dataset_train,
+            val_loader=dataset_val if jt.rank == 0 else None,
+            optimizer=optimizer,
+            epoch=epoch,
+            args=args, 
+            log_writer=log_writer,
+            early_stopper=early_stopper,
+            val_interval=30
+        )
+
+        # 保存模型
+        if args.output_dir:
+            save_model(args=args, model=model, optimizer=optimizer, epoch=epoch)
+
+        # 记录日志
+        log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                     'epoch': epoch,
+                     **{f'val_{k}': v for k, v in val_stats.items()}}
+
+        if args.output_dir and get_rank() == 0:
+            if log_writer is not None:
+                log_writer.flush()
+            
+            with open(os.path.join(args.output_dir, "log.txt"), mode="a", encoding="utf-8") as f:
+                f.write(json.dumps(log_stats) + "\n")
+
+        if early_stopped:
+            print(f'================================================== 早停 =======================================================')
+            break
+
+        print(f'================================================== 第 {epoch} 轮训练完成 =======================================================')
+
+    # 训练完成
+    total_time = time.time() - start_time
+    total_time_str = str(datetime.timedelta(seconds=int(total_time)))
+    print('训练时间: {}'.format(total_time_str))
+    print(f'================================================  训练完成 =====================================================')
+
+
+def main(args_list):
     # 设置设备
+    args = args_list[0]
     if args.device == 'cuda':
         jt.flags.use_cuda = 1
     
@@ -155,6 +278,9 @@ def main(args):
     llama_ckpt_dir = os.path.join(args.llama_path, llama_type)
     llama_tokenzier_path = os.path.join(args.llama_path, 'tokenizer.model')
     model = LLaMA_adapter(args, llama_ckpt_dir, llama_tokenzier_path)
+    model.float_auto()
+    model.train()
+    model.init()
     
     # 统计可训练参数
     print("================================================== 可训练参数 =====================================================")
@@ -181,120 +307,20 @@ def main(args):
     print("梯度累积次数: %d" % args.accum_iter)
     print("有效批次大小: %d" % eff_batch_size)
 
-    # 配置优化器
-    param_groups = add_weight_decay(model, args.weight_decay)
-    optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
-    # print(optimizer)
+    finetune(args_list, model)
 
-    # 创建数据集
-    dataset_train = FinetuneDataset(
-        batch_size=args.batch_size,
-        shuffle=True,
-        drop_last=True,
-        data_path=args.data_path, 
-        tokenizer_path=llama_tokenzier_path, 
-        max_tokens=args.max_seq_len, 
-        partition="train",
-    )
-    dataset_train.datainit()
+    if jt.in_mpi:
+        jt.sync_all(True)
 
-    dataset_val = FinetuneDataset(
-        batch_size=args.batch_size,
-        shuffle=True,
-        drop_last=True,
-        data_path=args.data_path, 
-        tokenizer_path=llama_tokenzier_path, 
-        max_tokens=args.max_seq_len, 
-        partition="val",
-    )
-    dataset_val.datainit()
-
-    # 配置日志
-    args.log_dir = os.path.join(args.output_dir, 'log')
-    
-    if get_rank() == 0 and args.log_dir is not None:
-        os.makedirs(args.log_dir, exist_ok=True)
-        log_writer = SummaryWriter(log_dir=args.log_dir)
-    else:
-        log_writer = None
-
-    # 配置早停
-    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
-
-    # 开始训练
-    print(f"================================================== 开始训练 {args.epochs} 轮 =====================================================")
-    start_time = time.time()
-    
-    for epoch in range(args.start_epoch, args.epochs):
-        # 训练一个epoch
-        train_stats, val_stats, early_stopped = train_one_epoch(
-            model=model,
-            data_loader=dataset_train,
-            val_loader=dataset_val if jt.rank == 0 else None,
-            optimizer=optimizer,
-            epoch=epoch,
-            args=args, 
-            log_writer=log_writer,
-            early_stopper=early_stopper,
-            val_interval=30
-        )
-
-        # 保存模型
-        if args.output_dir:
-            save_model(args=args, model=model, optimizer=optimizer, epoch=epoch)
-
-        # 记录日志
-        log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
-                     'epoch': epoch,
-                     **{f'val_{k}': v for k, v in val_stats.items()}}
-
-        if args.output_dir and get_rank() == 0:
-            if log_writer is not None:
-                log_writer.flush()
-            
-            with open(os.path.join(args.output_dir, "log.txt"), mode="a", encoding="utf-8") as f:
-                f.write(json.dumps(log_stats) + "\n")
-
-        if early_stopped:
-            print(f'================================================== 早停 =======================================================')
-            break
-
-        print(f'================================================== 第 {epoch} 轮训练完成 =======================================================')
-
-    # 训练完成
-    total_time = time.time() - start_time
-    total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-    print('训练时间: {}'.format(total_time_str))
-    print('================================================== 训练完成 =======================================================')
+    print(f'==================================================== Job End ====================================================')
 
 if __name__ == '__main__':
-    parser = get_args_parser()
+    datas = ['AddSub/addsub_1.json', 'AQuA/aqua_1.json', 'gsm8k/gsm8k_1.json', 'MultiArith/multiarith_1.json', 'SingleEq/singleeq_1.json', 'SVAMP/svamp_1.json']
 
-    # 默认参数
-    if len(sys.argv) == 1:
-        default_cli = [
-            '--llama_path', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',
-            '--data_path',  '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/Data/Dataset/math_14k/train.json',
-            '--device', 'cuda',
-            '--batch_size', '16',
-            '--epochs', '5',
-            '--max_seq_len', '512',
-            '--lr', '5e-5',
-            '--accum_iter', '1',
-            '--lora_layers', '0-32',
-            '--lora_rank', '8',
-            '--lora_targets', 'Q,K,V,O',
-            '--prompt_layers', '0-32',
-            '--p_adapter_layers', '0-32',
-            '--swi_x', '1',
-            '--seed', '1236',
-            '--output_dir', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/math_14k',
-            '--early_stop_patience', '5'
-        ]
-        args = parser.parse_args(default_cli)
-    else:
-        args = parser.parse_args()
-    
-    if args.output_dir:
-        Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-    main(args)
+    args_list = []
+    for data in datas:
+        data_path = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/Data/Dataset/math_commonsense/' + data
+        args = prepare_args(data_path)
+        args_list.append(args)
+
+    main(args_list)

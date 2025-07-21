@@ -2,13 +2,15 @@ import jittor as jt
 from jittor import nn
 from typing import Optional, Tuple, cast
 from .ModelArgs import ModelArgs
-from .Blok import Attention, FeedForward, RMSNorm, PAdapterLayer, Router
-from .utils import precompute_freqs_cis, inference_mode_jt
+from .Blok import Attention, FeedForward, RMSNorm, PAdapterLayer, Router, Module
+from .utils import precompute_freqs_cis
+from jittor import init
 
-
-class TransformerBlock(nn.Module):
+class TransformerBlock(Module):
     def __init__(self, layer_id: int, args: ModelArgs, w_lora=False, w_prompt=False, w_padapter=False):
         super().__init__()
+
+        self.args = args
         self.n_heads = args.n_heads
         self.dim = args.dim
         self.head_dim = args.dim // args.n_heads
@@ -53,6 +55,10 @@ class TransformerBlock(nn.Module):
             # 使用两层 MLP(或 SwiGLU) 做更复杂的路由
             self.adapter_type_router = Router(args.dim, self.adapter_type * args.swi_x, self.adapter_type)
 
+    def init_weights(self):
+        if self.args.swi_x == 0:
+            self.adapter_type_router.weight = init.invariant_uniform((self.adapter_type_router.out_features, self.adapter_type_router.in_features), "float32")
+
     def execute(self, x: jt.Var, start_pos: int, freqs_cis: jt.Var, mask: Optional[jt.Var]):
         # 计算类型权重
         type_weights = jt.sigmoid(self.adapter_type_router(x))
@@ -81,7 +87,7 @@ class TransformerBlock(nn.Module):
         out = jt.clamp(out, -65500, 65500)
         return out
 
-class LLaMA(nn.Module):
+class LLaMA(Module):
     def __init__(self, params: ModelArgs):
         """初始化 Transformer 主干模型"""
         super().__init__()
@@ -164,5 +170,5 @@ class LLaMA(nn.Module):
         for layer in self.layers:
             h = layer(h, start_pos, freqs_cis, mask)
         h = self.norm(h)
-        output = self.output(h[:, -1, :])  # only compute last logits
+        output = self.output(h)  # only compute last logits
         return output

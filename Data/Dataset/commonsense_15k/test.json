@@ -1,0 +1,2750 @@
+[
+    {
+        "instruction": "Please answer the following question with true or false, question: can you go to jail for civil contempt of court?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you hit the backboard on a free throw?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can i send a letter in the mail without a return address?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to pass on a solid yellow line?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do red yellow and orange peppers taste different?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has maroon 5 ever performed at the super bowl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you score an own goal from a direct free kick?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does las vegas have a pro football team?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a fifth season of mom?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be a season 3 of wrecked?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the five heartbeats based on a real group?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you remove venom glands from a snake?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the statue of liberty on new jersey?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is i know why the caged bird sings a memoir?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was varsity blues based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is season 2 of attack on titan out?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are liquor stores open in oklahoma on 4th of july?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the tower of terror still open in florida?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the 2008 hulk part of the mcu?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is cabo the same as cabo san lucas?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are two members of little big town married to each other?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the series bull based on dr phil?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a cane corso the same as an italian mastiff?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a yardstick and a meter stick the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the marines part of the us navy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the greatest intensity of an earthquake always found at the epicenter?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the shinkansen the fastest train in the world?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: mississippi was the first state to secede from the union?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: in meet the fockers is jorge greg son?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is an inspector calls set in the victorian era?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you get offside from a throw in?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does hilary duff sing in raise your voice?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a priest tell the police a confession uk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a woman give birth at 50 years?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is mail delivered on saturday before memorial day?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a bridge connecting sweden and denmark?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you re record on a cd r?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is egypt in african cup of nations 2018?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are gap and old navy the same company?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did the mayans and aztecs speak the same language?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: according to social control theory crime is a result of weak or broken social bond?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was nyc ever the capital of the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do northern ireland compete for gb in the olympics?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is new super mario bros wii the same as ds?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the charge of the light brigade a ballad?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are poppy seeds the same as sesame seeds?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a sequel to saturday night fever?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is gouda cheese made from cow's milk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do first ladies get secret service protection for life?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is alaska almost as big as the united states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did the berlin wall go all around west berlin?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does chicago also play a role in what became history\u2019s harlem renaissance?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there gonna be a new divergent movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the state of illinois have the death penalty?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is love never dies still showing in london?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is scottie pippen in the nba hall of fame?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has polaris always been the north star also known as the pole star?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you sail from the black sea to the mediterranean?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are they still making epic rap battles of history?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do i need front license plate in ontario?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a follow up movie to i am number four?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the dominican republic part of the united states of america?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is diabetes mellitus the same as type 2 diabetes?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the us $2 bill in circulation?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are chemical reactions limited by the availability of reactants?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is topanga in the city of los angeles?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a donkey and a mule the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is mary and the witches flower a ghibli movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a sequel to the mortal instruments city of bones?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is scotland in the fifa world cup 2018?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are you supposed to watch the hobbit before lord of the rings?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is forever21 and charlotte russe owned by the same company?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the last of us remastered different from the original?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is mogli a sequel to the jungle book?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do they speak a real language in game of thrones?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is lucky for life a multi state game?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a leader in a school of fish?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is daryl dixon in the comics of walking dead?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is mystic pizza based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did the titanic britannic and olympic all sank?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the coast guard part of the army?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there such a thing as a bladder transplant?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is into the woods a musical all the way through?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the prince of the forest bambi's dad?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did eddie the eagle qualify for the 1992 olympics?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you buy alcohol on sunday in kansas?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a difference between a chicken and a rooster?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the movie split part of a trilogy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are diet pepsi and pepsi max the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can i ship wine from california to pennsylvania?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you put cast iron on induction cooktops?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has the us ever been in the world cup final?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a rock in the dome of the rock?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is wholemeal flour the same as wholewheat flour?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you buy liquor in new york on sunday?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is magenta from blue's clues a boy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a sequal to the 5th wave?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a xbox one play xbox 360 games?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a city in turkey called batman?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is woody harrelson in the new planet of the apes movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is saving hope coming back for season 6?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can i use my nexus card in a non nexus lane?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: antivirus software is considered a form of application software?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can slate be formed from any parent rock?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was there a cure for syphilis in 1827?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a season six of once upon a time?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has there ever been a supermajority in congress?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is puerto rico a united states of america state?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the audi s5 come in manual transmission?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do airplanes dump their waste in the air?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the pelvic bone the same as the hip bone?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a four year old still a toddler?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is university of houston the same as university of houston downtown?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: in the game of chess can a queen move like a knight?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be an avengers 3?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is just breathe by pearl jam in a movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is beauty and the beast a disney movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did dan stevens do the singing in beauty and the beast?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you include the title page in a table of contents?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there such a thing as natural estrogen?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a dpt the same as a phd?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: in the vampire diaries do damon and elena ever get together?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is dublin ohio in the 12th congressional district?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the trump hotel in vegas have a casino?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the enteric nervous system part of the autonomic nervous system?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does blair have a baby in gossip girl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a vidalia onion the same as a sweet onion?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does age have any influence on attentional ability or inattentional blindness?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the 7th season of sons of anarchy the last?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the heart controlled by the autonomic nervous system?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will a mossberg 500 stock fit a maverick 88?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did kobe bryant started his first year in the nba?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is creed a part of the rocky series?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a sequel to the city of ember?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a bridge between sweden and denmark?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you play mexican train with regular dominoes?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal for a 14 year old to get a tattoo?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the san andreas fault a subduction zone?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the movie the reef based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is st thomas a territory of the united states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a limited partnership have two general partners?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is batman and robin a sequel to batman forever?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does blair in gossip girl have a baby?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you use windshield washer fluid to clean your car?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the girl in the spiders web a sequel to the girl with the dragon tattoo?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did how do you roll go out of business?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is captain america part of the justice league?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the man in the iron mask filmed at versailles?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is cindy lou who jenny from gossip girl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is jarvis christian college a 4 year school?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you need a return address on an envelope?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is lake isle of innisfree a real place?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the pentagon the largest office building in the world?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the show taboo based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do i need a visa to go to iraq?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is fathers day on the same day every year?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did england play the 2014 fifa world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the man from snowy river filmed in australia?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can someone with a life sentence get parole?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has there ever been a nba finals mvp on the losing team?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has a country won eurovision twice in a row?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has costa rica ever won a world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the lucy show before i love lucy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to not turn right on red?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are garlic and onion in the same family?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can an off duty cop carry a gun?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the egr valve part of the engine?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the ex wife die in taken 2?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the flemish language the same as dutch?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are foxtel play and foxtel now the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there still a back to the future ride?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do both parties get paid on judge judy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does disney own the rights to harry potter?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is hela loki's daughter in the comics?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are you allowed a beard in the royal marines?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to jaywalk in the uk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a taxpayer number the same as a tax id?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the state of washington have the death penalty?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you get aero bars in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is rio de janeiro the capital of brazil?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a money service business a financial institution?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do trade winds blow from west to east?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is jim hart in the hall of fame?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will the rams and chargers share a stadium?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is giant man and ant man the same person?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you go on vacation to north korea?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is i 78 a toll road in pa?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has any team won the superbowl in their own stadium?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is everyone with a phd called a doctor?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is puerto rico in the miss america pageant?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: in uno can you win on a wild card?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a land rover and a range rover the same thing?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is penn foster an accredited online high school?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the world cup trophy made of gold?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a disease that makes you not feel pain?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does hodgins and angela get their money back?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the movie sand pebbles based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do germany get to keep the world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did will die on days of our lives?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a liter the same as a quart?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the us forest service part of the department of interior?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a 8th season of nurse jackie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you play xbox 360 games on an xbox one console?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the money used in jordan is called the dinar?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is kamala in the wwe hall of fame?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are boost mobile and virgin mobile the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there great white sharks in atlantic ocean?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is baking soda another name for bicarbonate of soda?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does disney world still have the carousel of progress?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can they close the roof at wembley stadium?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a fixed asset a non current asset?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a statute of limitations in the uk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the glee club win sectionals in season 1?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the target hr zone is the range between 60 - 80 of an individual's maximum hr?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is becky g in the power rangers movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there more episodes of pretty little liars?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is middle name and middle initial the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a road under the english channel?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was roman j israel based on true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are permanent residents allowed to work in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a prequel to alice through the looking glass?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the second continental congress ran the government during the revolutionary war?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is hit and run a criminal offense in canada?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it legal to use a social security number for identification?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a game end in a tie in the nfl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you buy a car in nj on sunday?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does ash ever find out emma is a mermaid?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is mass the same as weight on earth?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it law to have a photographic driving licence?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: by the end of the fourth century christianity was the official religion of the roman empire?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do supreme court rulings apply to all states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is i wonder in mamma mia here we go again?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does marvel own the rights to fantastic four?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was san antonio ever the capital of texas?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was dwight the father of angela's baby?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is al kooper in the rock and roll hall of fame?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it legal to have a gun in florida?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is ionization energy and ionization potential the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you have to join a union in a right to work state?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are opilio crabs the same as snow crabs?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there an open carry law in indiana?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is percy jackson the only son of poseidon?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you need to be a us citizen to go to a shooting range?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a minimum speed limit on highways?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does each australian state have its own constitution?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there coral snakes in the united states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was family matters filmed in front of a live audience?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a tertiary consumer eat a primary consumer?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is jabba the hutt in a new hope?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the nation of hawaii part of the united states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is lion a member of the cat family?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is jamaica part of the united states of america?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does columbo's wife ever appear on the show?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the sale of real estate is covered by the common law of contracts?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was there a group called the five heartbeats?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the fallopian tubes connected to the uterus?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did dorothy from wizard of oz have a last name?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it against the law to throw ashes in the ocean?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the bicuspid valve the same as the mitral valve?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the new god of war ps4 exclusive?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are cooking oil and vegetable oil the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the us virgin islands part of the usa?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is captain america civil war an avengers movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the average the same as the median?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is simon the father of sandy's baby on 7th heaven?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a jack beat a king in war?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to own a gun in new york?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a irrational number be a real number?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are all marvel movies in the same universe?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you itch with hand foot and mouth?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can lipid soluble drugs cross blood brain barrier?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a nuclear power plant in arizona?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you jump while shooting a free throw?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a puma the same as a panther?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you have two surnames in the uk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are burger king's onion rings made from real onions?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is les choristes based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there victoria's secret stores in europe?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: nasik is situated on the bank of river?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a military base in spokane wa?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can an attorney practice law in any state?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is canada a member of the united nations?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is hunter x hunter 2011 in english dub?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do josh and donna date on west wing?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can the xbox 1 play xbox 360 games?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the human body able to synthesize lipids carbohydrates and proteins?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there stand your ground law in california?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there special forces in the air force?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to desecrate the us flag?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is martin andersen beachline expressway a toll road?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is an atomic bomb and a nuclear bomb the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the president of the senate the vice president?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is king louie in the jungle book book?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is we are your friends a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be the messengers season 2?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the marines a division of the navy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: footnote 4 of united states v. carolene products co. identifies areas where?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the movie dead man walking a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do identical twins have to be in the same sac?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is adaptive immunity the same as acquired immunity?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a us citizen drive into canada without a passport?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is uber and uber eats the same company?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you need a pistol permit to shoot at a range in ny?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the first commandment is this love the lord?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are rachel and ross together at the end of friends?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you buy lawn darts in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are us treasury notes a capital market instrument?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a jersey 20p legal tender in england?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did they make a second golden compass movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the book tears of a tiger a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has the indian hockey team won any medal at the olympic games?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did austria qualify for the world cup 2018?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are dr martens and doc martens the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the 12 apostles the same as the 12 disciples?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do the titans win in remember the titans?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is two cycle and two stroke oil the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did angela lansbury sing in beauty and the beast?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the mass of the person make any difference?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there penalty kicks in the world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did the st. louis blues make the stanley cup playoffs?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are cheetahs the fastest animal in the world?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do cows need to have a baby to produce milk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does captain america come back to life in the comics?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the bronze age before the iron age?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is maid of honour the same as chief bridesmaid?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are lighting bugs and fireflies the same thing?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the film tea with mussolini based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the cat die in the movie hush?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is trent dilfer in the hall of fame?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the grand canyon the second largest canyon in the world?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has anyone ever survived a commercial plane crash?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a second season of looming tower?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has alaska ever made the little league world series?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you get psychosis from lack of sleep?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is thursday night football going to be on regular tv?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the national anthem and star spangled banner the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the liver part of the digestive canal?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does lead have any important uses in nuclear science?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is range rover the same as land rover?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is yorkshire the largest county in the uk?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do the angles of a triangle always equal 180?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is cloak and dagger part of the mcu?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does shaving your head make lice go away?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do the individual parallel lines in a parallel circuit have different currents flowing through them?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is variance the square root of standard deviation?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the hippocampus part of the brain stem?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: my father is a canadian citizen can i become one?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you sue the united states postal service?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is glen cove part of town of oyster bay?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is return of the living dead a sequel?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is season 5 the last season of the fosters?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is li-ion the same as lithium?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the main character in turtles all the way down a girl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does she kill glenn in the book of henry?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there an nfl team in las vegas?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is narcan used for anything other than overdose?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is easter friday a bank holiday in england?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the letter j in the latin alphabet?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be another maze runner film?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are all the original rolling stones still alive?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are tampons and pads taxed in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you buy ps2 games on ps4 store?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was michael jackson part of the jackson 5?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a book 2 of 13 reasons why?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does anne marry gilbert in anne of green gables?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the whistleblower act apply to private companies?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was jackie chan in the movie enter the dragon?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does there have to be a return address on an envelope?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it possible to make gravity in space?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the movie se7en based on a book?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is self funded and self insured the same thing?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a petition the same as a lawsuit?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does fish oil have vitamin a in it?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there such a thing as a white dove?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does everyone in iceland have a surname ending in son?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is swiss chard part of the beet family?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is operating cash flow the same as free cash flow?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there going to be a season 5 of whitechapel?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do games from xbox 360 work on xbox one?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is young sheldon a spin off of big bang theory?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did thierry henry play in 1998 world cup final?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is dill weed the same as dill leaves?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: what is the movie shawshank redemption based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is battlefield 4 a sequel to battlefield 3?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do signing bonuses count against the cap nhl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is destin fl on the gulf of mexico?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a grade d at gcse a pass?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: inflation means specific prices are rising and relative prices are falling?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there any english managers in the premier league?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a number 2 of i am number four?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a blue whale have a back bone?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was parks and rec supposed to be a spin off of the office?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there mountains in the state of indiana?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are black panthers and jaguars the same animal?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there an age limit to buy non alcoholic beer?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: was the raid at harpers ferry a success?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do we need to pay tax on ppf interest?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you drink at 18 in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it legal in japan to marry your cousin?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is jersey part of the uk royal mail?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is an invasion of privacy against the law?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is metro and t mobile the same company?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the articles of confederation part of the constitution?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is rogue one the sequel to force awakens?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is cabo and cabo san lucas the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are the north and south islands of new zealand connected?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a standard deck of cards include jokers?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did attack on titan season 2 come out?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is wind waker a sequel to ocarina of time?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you kill lice by blow drying your hair?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does dennis from hotel transylvania become a vampire?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the loud house based on a true story?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does the etihad stadium manchester have a roof?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is new zealand part of the united states?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: fletcher henderson began his musical career with black swan records?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does creon want to be king of thebes?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is there a second fifty shades of grey movie?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is croatia part of the european economic area?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are there any poisonous frogs in the us?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you get a new green jacket every time you win the masters?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you get a phd and an md?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is windows live id same as microsoft account?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you take from the second row in jenga?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it bad to bite the skin off your fingers?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is land rover and jaguar the same company?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do you get a point in overtime nhl?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is french guiana part of the european union?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are ant man and giant man the same?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is serbia part of the european economic area?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is windows defender an antivirus in windows 7?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: do derek morgan and garcia ever get together?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a peace bond a conviction in canada?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the chevy equinox a mid size suv?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a high court enforcement officer a bailiff?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can you be offsides on a corner kick?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: has any nba team ever come back from 3-0 in playoffs?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did one of the twins from full house die?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is a toy poodle the same as a miniature poodle?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does holding a fee simple estate mean that they own the land absolutely?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a phd give you a dr title?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can food be kosher and halal at the same time?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are eric clapton and pattie boyd still married?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a season 4 of da vinci's demons?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is lex luthor a good guy in smallville?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is northern ireland a part of the united kingdom?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did russia automatically qualify for the world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the united states in the united nations?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: are any of the galapagos islands inhabited by humans?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is it illegal to put an engine on a bicycle?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: did lionel messi score in 2006 world cup?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a new season of venture brothers?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the office does michael end up with holly?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: is the abdomen and the stomach the same thing?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: can a cabinet minister be from another party?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does a free throw count as a field goal?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: does anyone die in season 8 of grey's anatomy?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: will there be a new season of star trek discovery?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is true",
+        "answer": "true"
+    },
+    {
+        "instruction": "Please answer the following question with true or false, question: the fermentation of sugar to alcohol can take place only if living yeast cells are present?\n\nAnswer format: true/false",
+        "input": "",
+        "output": "the correct answer is false",
+        "answer": "false"
+    }
+]

@@ -115,8 +115,8 @@ def sample_top_p(probs, p):
     # 累加概率
     probs_sum = jt.cumsum(probs_sort, dim=-1)
     # 生成mask，超过p的部分置零
-    mask = (probs_sum - probs_sort) > p
-    probs_sort = probs_sort * (~mask)
+    mask = probs_sum > p
+    probs_sort = probs_sort * mask
     # 归一化
     probs_sort = probs_sort / (probs_sort.sum(dim=-1, keepdims=True) + 1e-8)
     # 多项式采样
