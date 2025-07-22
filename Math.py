@@ -16,10 +16,9 @@ from pathlib import Path
 from Train.engine_finetune import train_one_epoch
 from tensorboardX import SummaryWriter
 
-
+jt.gc()
 jt.flags.log_silent = 1
 jt.flags.auto_mixed_precision_level = 1
-jt.flags.use_fuse_transpose = False
 
 def str2bool(v):
     """字符串转布尔值"""
@@ -95,9 +94,9 @@ def prepare_args(data_path):
         '--llama_path', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',
         '--data_path',  data_path,
         '--device', 'cuda',
-        '--batch_size', '16',
+        '--batch_size', '4',
         '--epochs', '5',
-        '--max_seq_len', '512',
+        '--max_seq_len', '300',
         '--lr', '5e-5',
         '--accum_iter', '1',
         '--lora_layers', '0-32',
@@ -107,7 +106,7 @@ def prepare_args(data_path):
         '--p_adapter_layers', '0-32',
         '--swi_x', '1',
         '--seed', '1236',
-        '--output_dir', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/All/'+data_path.split('/')[-2],
+        '--output_dir', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/Math',
         '--early_stop_patience', '5'
     ]
     args = get_args_parser().parse_args(default_cli)
@@ -118,6 +117,7 @@ def prepare_args(data_path):
     return args
 
 def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
+    args = args_list[0]
     llama_tokenzier_path = os.path.join(args.llama_path, 'tokenizer.model')
     # 创建数据集
     dataset_train = MathDataset(
@@ -143,6 +143,10 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
         drop_last=True,
     )
     dataset_val.datainit()
+
+    print('====================================================== 数据集大小 =======================================================')
+    print(f'训练集大小: {len(dataset_train)}')
+    print(f'验证集大小: {len(dataset_val)}')
 
     # 配置优化器
     param_groups = add_weight_decay(model, args.weight_decay)

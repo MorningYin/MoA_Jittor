@@ -140,10 +140,13 @@ class LLaMA(Module):
         self.get_trainable_params()
 
     def get_trainable_params(self):
-        """设置模型的可训练参数"""
+        """设置模型的可训练参数，并记录可训练参数列表"""
         # 冻结所有参数
         for name, para in self.named_parameters():
             para.stop_grad()
+
+        # 初始化可训练参数记录（使用 id 避免重复）
+        self._trainable_params = set()
 
         # 选择性解冻参数
         for name, para in self.named_parameters():
@@ -152,10 +155,14 @@ class LLaMA(Module):
                 if self.model_args.w_bias:
                     if 'norm' in name or 'bias' in name:
                         para.start_grad()
+                        self._trainable_params.add(id(para))
                         
-                # 参数高效微调参数
-                if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name:
-                    para.start_grad()
+            # 参数高效微调参数
+            if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name:
+                para.start_grad()
+                self._trainable_params.add(id(para))
+
+        return self  # 支持链式调用
 
     def execute(self, tokens: jt.Var, start_pos: int):
         _bsz, seqlen = tokens.shape

@@ -190,7 +190,7 @@ def train_one_epoch(model: LLaMA_adapter,
 
             with jt.no_grad():
                 for val_examples, val_labels, val_prompt_mask in val_loader:
-                    val_c_loss, val_m_loss = model(val_examples, val_labels, val_prompt_mask)
+                    val_c_loss, val_m_loss = model(tokens=val_examples, labels=val_labels)
                     val_loss += val_c_loss + val_m_loss * 0  # 与训练一致，只使用分类损失
             
             val_loss = val_loss / len(val_loader)

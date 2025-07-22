@@ -14,7 +14,7 @@ class Module(nn.Module):
         super().__init__(*args, **kwargs)
 
     def train(self):
-        ''' 将模块设置为评估training模式。 '''
+        ''' 将模块设置为训练模式，只对可训练参数操作梯度。 '''
         def callback(parents, k, v, n):
             if isinstance(v, Module):
                 v.is_train = True
@@ -22,29 +22,32 @@ class Module(nn.Module):
                     v.clear_cache()
         self.dfs([], None, callback, None)
 
-        # backup stop grad or not
+        # 备份存在时，只恢复可训练参数的梯度状态
         if hasattr(self, "backup_grad_state"):
             for p in self.parameters():
-                if id(p) in self.backup_grad_state and self.backup_grad_state[id(p)]:
+                pid = id(p)
+                if pid in self._trainable_params and pid in self.backup_grad_state and self.backup_grad_state[pid]:
                     p.start_grad()
+            # 可选：清理备份以避免重复使用
+            del self.backup_grad_state
         return self
 
     def eval(self):
-        ''' 将模块设置为评估eval模式。 '''
+        ''' 将模块设置为评估模式，只对可训练参数操作梯度。 '''
         def callback(parents, k, v, n):
             if isinstance(v, Module):
                 v.is_train = False
-                if k == 'attention':
-                    v.set_cache()
+                # 可选：如果有评估特定逻辑，如注意力缓存，添加这里
         self.dfs([], None, callback, None)
 
-        # backup stop grad or not
-        if not hasattr(self, "backup_grad_state"):
-            self.backup_grad_state = {}
+        # 只备份和停止可训练参数的梯度
+        self.backup_grad_state = {}
         for p in self.parameters():
-            if id(p) not in self.backup_grad_state:
-                self.backup_grad_state[id(p)] = not p.is_stop_grad()
-            p.stop_grad()
+            pid = id(p)
+            if pid in self._trainable_params:
+                # 假设 not p.is_stop_grad() 表示 requires_grad=True
+                self.backup_grad_state[pid] = not p.is_stop_grad()
+                p.stop_grad()
         return self
     
     def init(self):
