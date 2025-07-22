@@ -7,7 +7,7 @@ from .utils import precompute_freqs_cis
 from jittor import init
 
 class TransformerBlock(Module):
-    def __init__(self, layer_id: int, args: ModelArgs, w_lora=False, w_prompt=False, w_padapter=False):
+    def __init__(self, layer_id: int, args: ModelArgs, w_lora=False, w_prompt=False, w_padapter=False, sparse:bool=False, if_trainable_gamma:bool=False, gamma:float=0.5):
         super().__init__()
 
         self.args = args
@@ -15,10 +15,10 @@ class TransformerBlock(Module):
         self.dim = args.dim
         self.head_dim = args.dim // args.n_heads
 
-        self.attention = Attention(args, w_lora=w_lora, w_prompt=w_prompt)
+        self.attention = Attention(args, w_lora=w_lora, w_prompt=w_prompt, sparse=sparse, if_trainable_gamma=if_trainable_gamma, gamma=gamma)
         self.feed_forward = FeedForward(
             dim=args.dim, hidden_dim=4 * args.dim, multiple_of=args.multiple_of, ffn_dim_multiplier=args.ffn_dim_multiplier, args=args,
-            w_lora=w_lora
+            w_lora=w_lora, sparse=sparse, if_trainable_gamma=if_trainable_gamma, gamma=gamma
         )
         self.layer_id = layer_id
         self.attention_norm = RMSNorm(args.dim, eps=args.norm_eps)
@@ -26,7 +26,7 @@ class TransformerBlock(Module):
 
         self.w_padapter = w_padapter
         if self.w_padapter:
-            self.p_adapter = PAdapterLayer(self.dim, args.p_adapter_size, args.expert_num, args.p_adapter_hydra)
+            self.p_adapter = PAdapterLayer(self.dim, args.p_adapter_size, args.expert_num, args.p_adapter_hydra, sparse, if_trainable_gamma, gamma)
         
         # 统计各类适配器数量
         self.adapter_type = 0
@@ -55,36 +55,71 @@ class TransformerBlock(Module):
             # 使用两层 MLP(或 SwiGLU) 做更复杂的路由
             self.adapter_type_router = Router(args.dim, self.adapter_type * args.swi_x, self.adapter_type)
 
+    def set_cache(self):
+        self.cache_tokens_weights = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.adapter_type))
+        self.cache_type_weights = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.adapter_type))
+
+    def clear_cache(self):
+        self.cache_tokens_weights = None
+        self.cache_type_weights = None
+
     def init_weights(self):
         if self.args.swi_x == 0:
             self.adapter_type_router.weight = init.invariant_uniform((self.adapter_type_router.out_features, self.adapter_type_router.in_features), "float32")
 
     def execute(self, x: jt.Var, start_pos: int, freqs_cis: jt.Var, mask: Optional[jt.Var]):
+        bsz, seqlen, _ = x.shape
+        tokens_weights = []
         # 计算类型权重
         type_weights = jt.sigmoid(self.adapter_type_router(x))
         type_idx = 0
-        h = x + self.attention(
-            self.attention_norm(x),
-            start_pos,
-            freqs_cis,
-            mask,
-            type_weight=type_weights[:,:,type_idx:type_idx+self.attention_type]
-        )
+        if not self.is_train:
+            attention_out, tokens_weight = self.attention(
+                self.attention_norm(x),
+                start_pos,
+                freqs_cis,
+                mask,
+                type_weight=type_weights[:,:,type_idx:type_idx+self.attention_type]
+            )
+            h = x + attention_out
+            tokens_weights.append(tokens_weight)
+        else:
+            h = x + self.attention(
+                self.attention_norm(x),
+                start_pos,
+                freqs_cis,
+                mask,
+                type_weight=type_weights[:,:,type_idx:type_idx+self.attention_type]
+            )
         type_idx += self.attention_type
         residual = h
         h = self.ffn_norm(h)
-        out = self.feed_forward(
-            h,
-            type_weight=type_weights[:,:,type_idx:type_idx+self.FFN_type]
-        )
+        if not self.is_train:
+            out, tokens_weight = self.feed_forward(
+                h,
+                type_weight=type_weights[:,:,type_idx:type_idx+self.FFN_type]
+            )
+            tokens_weights.append(tokens_weight)
+        else:
+            out = self.feed_forward(
+                h,
+                type_weight=type_weights[:,:,type_idx:type_idx+self.FFN_type]
+            )
         type_idx += self.FFN_type
         if self.w_padapter:
-            adapter_states = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
-            out = out + adapter_states
+            if not self.is_train:
+                adapter_states, tokens_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
+                tokens_weights.append(tokens_weight)
+                out = out + adapter_states
+            else:
+                out = out + self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
         out = residual + out
 
-        # 避免 float16 溢出
-        out = jt.clamp(out, -65500, 65500)
+        if not self.is_train:
+            tokens_weights = jt.stack(tokens_weights, dim=2)
+            self.cache_tokens_weights[:bsz, start_pos : start_pos + seqlen] = tokens_weights
+            self.cache_type_weights[:bsz, start_pos : start_pos + seqlen] = type_weights
+
         return out
 
 class LLaMA(Module):
@@ -119,6 +154,9 @@ class LLaMA(Module):
                 w_lora   = (layer_id in self.lora_layers_id),
                 w_prompt = (layer_id in self.prompt_layers_id),
                 w_padapter = (layer_id in self.p_adapter_layers_id),
+                sparse = params.sparse,
+                if_trainable_gamma = params.if_trainable_gamma,
+                gamma = params.gamma
             )
             setattr(self, f"layer_{layer_id}", block)
             self.layers.append(block)
@@ -158,7 +196,7 @@ class LLaMA(Module):
                         self._trainable_params.add(id(para))
                         
             # 参数高效微调参数
-            if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name:
+            if 'lora' in name or 'prompt' in name or 'adapter' in name or 'router' in name or 'gamma' in name:
                 para.start_grad()
                 self._trainable_params.add(id(para))
 
@@ -178,4 +216,5 @@ class LLaMA(Module):
             h = layer(h, start_pos, freqs_cis, mask)
         h = self.norm(h)
         output = self.output(h)  # only compute last logits
+
         return output

@@ -53,6 +53,11 @@ class LLaMA_adapter(Module):
             prompt_layers=args.prompt_layers,
             prompt_len=args.prompt_len,
             expert_weight=args.expert_weight,
+
+            # 稀疏路由参数
+            sparse=args.sparse,
+            if_trainable_gamma=args.if_trainable_gamma,
+            gamma=args.gamma,
             
             # 预训练模型参数
             **params

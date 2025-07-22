@@ -13,10 +13,10 @@ import time
 from typing import List
 
 from pathlib import Path
+from Utils.misc import MetricLogger, SmoothedValue
 from Train.engine_finetune import train_one_epoch
 from tensorboardX import SummaryWriter
 
-jt.gc()
 jt.flags.log_silent = 1
 jt.flags.auto_mixed_precision_level = 1
 
@@ -68,6 +68,9 @@ def get_args_parser():
 
     # Adapter路由参数
     parser.add_argument('--swi_x', default=0, type=int, help='适配器路由参数')
+    parser.add_argument('--sparse', default=True, type=bool, help='是否稀疏路由')
+    parser.add_argument('--if_trainable_gamma', default=True, type=bool, help='阈值是否可训练')
+    parser.add_argument('--gamma', default=0.5, type=float, help='阈值')
 
     # 数据集参数
     parser.add_argument("--data_path", default="", type=str, help="训练数据路径")
@@ -86,15 +89,19 @@ def get_args_parser():
     parser.add_argument('--seed', default=0, type=int, help='随机种子')
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N', help='开始轮数')
 
+    # 断点续训参数
+    parser.add_argument('--trainable_params', type=str2bool, nargs='?', const=True, default=False, help='是否断点续训')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='断点续训路径')
+
     return parser
 
 
 def prepare_args(data_path):
     default_cli = [
-        '--llama_path', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',
+        '--llama_path', '/hy-tmp/LLaMA/original',
         '--data_path',  data_path,
         '--device', 'cuda',
-        '--batch_size', '4',
+        '--batch_size', '16',
         '--epochs', '5',
         '--max_seq_len', '300',
         '--lr', '5e-5',
@@ -105,9 +112,14 @@ def prepare_args(data_path):
         '--prompt_layers', '0-32',
         '--p_adapter_layers', '0-32',
         '--swi_x', '1',
-        '--seed', '1236',
-        '--output_dir', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/Math',
-        '--early_stop_patience', '5'
+        '--seed', '0',
+        '--output_dir', '/root/MoA_Jittor/Output',
+        '--early_stop_patience', '5',
+        '--sparse', 'True',
+        '--if_trainable_gamma', 'True',
+        '--gamma', '0.5',
+        '--trainable_params', 'False',
+        '--checkpoint_path', '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr5e-5_bs2_Debug_seed0/checkpoint-0.pth'
     ]
     args = get_args_parser().parse_args(default_cli)
 
@@ -125,7 +137,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
         tokenizer_path=llama_tokenzier_path, 
         max_tokens=args.max_seq_len, 
         partition="train",
-        val_ratio=0.1,
+        val_ratio=0.05,
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True,
@@ -137,7 +149,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
         tokenizer_path=llama_tokenzier_path, 
         max_tokens=args.max_seq_len, 
         partition="val",
-        val_ratio=0.1,
+        val_ratio=0.05,
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True,
@@ -151,6 +163,32 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     # 配置优化器
     param_groups = add_weight_decay(model, args.weight_decay)
     optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
+    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
+
+    if args.trainable_params:
+        checkpoint = jt.load(args.checkpoint_path)
+        args.start_epoch = checkpoint['epoch']
+        data_iter_step = int(checkpoint['trainable_params'][0].split('_')[-1])
+        model.load_state_dict(checkpoint['trainable_params'][1])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        early_stopper.load_state(checkpoint['early_stopper'])
+        metric_logger = MetricLogger()
+        metric_logger.load_state_dict(checkpoint['metric_logger'])
+        val_metric_logger = MetricLogger()
+        val_metric_logger.load_state_dict(checkpoint['val_metric_logger'])
+        print(f'================================================== 断点续训 =======================================================')
+        print(f'断点续训轮数: {args.start_epoch}')
+        print(f'断点续训步数: {data_iter_step}')
+    else:       
+        metric_logger = MetricLogger(delimiter="  ")
+        metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
+        metric_logger.add_meter('closs', SmoothedValue(window_size=5, fmt='{median:.6f}'))
+        metric_logger.add_meter('mloss', SmoothedValue(window_size=5, fmt='{median:.6f}'))
+
+        val_metric_logger = MetricLogger(delimiter="  ")
+        val_metric_logger.add_meter('loss', SmoothedValue(window_size=1, fmt='{value:.6f}'))
+
+        data_iter_step = -1
 
     # 配置日志
     args.log_dir = os.path.join(args.output_dir, 'log')
@@ -161,9 +199,6 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     else:
         log_writer = None
 
-    # 配置早停
-    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
-
     # 开始训练
     print(f"============================================ 开始训练  ==================================================")
     start_time = time.time()
@@ -173,18 +208,23 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
         train_stats, val_stats, early_stopped = train_one_epoch(
             model=model,
             data_loader=dataset_train,
-            val_loader=dataset_val if jt.rank == 0 else None,
+            val_loader=dataset_val,
             optimizer=optimizer,
             epoch=epoch,
+            data_iter_step=data_iter_step,
             args=args, 
             log_writer=log_writer,
             early_stopper=early_stopper,
-            val_interval=30
+            val_interval=50,
+            metric_logger=metric_logger,
+            val_metric_logger=val_metric_logger
         )
+
+        data_iter_step = -1
 
         # 保存模型
         if args.output_dir:
-            save_model(args=args, model=model, optimizer=optimizer, epoch=epoch)
+            save_model(args=args, epoch=epoch, model=model, optimizer=optimizer, early_stopper=early_stopper, log_writer=log_writer, metric_logger=metric_logger, val_metric_logger=val_metric_logger)
 
         # 记录日志
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
@@ -320,10 +360,11 @@ def main(args_list):
 
 if __name__ == '__main__':
     datas = ['AddSub/addsub_1.json', 'AQuA/aqua_1.json', 'gsm8k/gsm8k_1.json', 'MultiArith/multiarith_1.json', 'SingleEq/singleeq_1.json', 'SVAMP/svamp_1.json']
+    # datas = ['Debug/2.json']
 
     args_list = []
     for data in datas:
-        data_path = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/Data/Dataset/math_commonsense/' + data
+        data_path = '/root/MoA_Jittor/Data/Dataset/math_commonsense/' + data
         args = prepare_args(data_path)
         args_list.append(args)
 

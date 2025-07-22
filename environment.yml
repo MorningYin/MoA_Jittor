@@ -1,5 +1,6 @@
 name: moa_jittor
 channels:
+  - pytorch
   - conda-forge
   - defaults
 
@@ -9,6 +10,7 @@ dependencies:
   - libgcc-ng
   - numpy
   - cmake
+  - pip
 
   - pytorch      
   - cpuonly     

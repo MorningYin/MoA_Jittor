@@ -1,0 +1,36 @@
+[{
+    "question": "Joan found 70 seashells on the beach . she gave Sam some of her seashells . She has 27 seashell . How many seashells did she give to Sam ? ",
+    "chain-of-thought": "\nA: Joan found 70 seashells. She gave some to Sam, so now she has 27 seashells. The number of seashells she gave to Sam must have been 70 - 27 = 43 seashells. The answer is 43.",
+    "pred": 43.0,
+    "answer": 43.0
+},{
+    "question": "There were 28 bales of hay in the barn . Tim stacked bales in the barn today . There are now 54 bales of hay in the barn . How many bales did he store in the barn ? ",
+    "chain-of-thought": "\nA: There were 28 bales of hay in the barn. After Tim stacked bales, there are 54 bales. The difference must be the number of bales he stored. So, he must have stored 54 - 28 = 26 bales. The answer is 26.",
+    "pred": 26.0,
+    "answer": 26.0
+},{
+    "question": "Mary is baking a cake . The recipe wants 8 cups of flour . She already put in 2 cups . How many cups does she need to add ? ",
+    "chain-of-thought": "\nA: The recipe wants 8 cups of flour. She already put in 2 cups. She needs to add 8 - 2 = 6 cups. The answer is 6.",
+    "pred": 6.0,
+    "answer": 6.0
+},{
+    "question": "Sara 's high school played 12 basketball games this year . The team won most of their games . They were defeated during 4 games . How many games did they win ? ",
+    "chain-of-thought": "\nA: The team played 12 games in total. They were defeated in 4 games. That means they won 12 - 4 = 8 games. The answer is 8.",
+    "pred": 8.0,
+    "answer": 8.0
+},{
+    "question": "There are 22 walnut trees currently in the park . Park workers will plant walnut trees today . When the workers are finished there will be 55 walnut trees in the park . How many walnut trees did the workers plant today ? ",
+    "chain-of-thought": "\nA: We start with 22 walnut trees. Later we have 55 walnut trees. The difference must be the number of trees they planted. So, they must have planted 55 - 22 = 33 trees. The answer is 33.",
+    "pred": 33.0,
+    "answer": 33.0
+},{
+    "question": "Mike had 34 peaches at his roadside fruit dish . He went to the orchard and picked peaches to stock up . There are now 86 peaches . how many did he pick ? ",
+    "chain-of-thought": "\nA: Mike had 34 peaches at the roadside fruit dish. He went to the orchard and picked peaches to stock up. Now there are 86 peaches. The difference must be the number of peaches he picked. So, he must have picked 86 - 34 = 52 peaches. The answer is 52.",
+    "pred": 52.0,
+    "answer": 52.0
+},{
+    "question": "There were 6 roses in the vase . Mary cut some roses from her flower garden . There are now 16 roses in the vase . How many roses did she cut ? ",
+    "chain-of-thought": "\nA: There were 6 roses in the vase. After Mary cut some roses from her flower garden, there are 16 roses in the vase. The difference must be the number of roses she cut. So, she must have cut 16 - 6 = 10 roses. The answer is 10.",
+    "pred": 10.0,
+    "answer": 10.0
+}]

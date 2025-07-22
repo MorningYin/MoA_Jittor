@@ -30,6 +30,7 @@ class SmoothedValue(object):
     def __init__(self, window_size=20, fmt=None):
         if fmt is None:
             fmt = "{median:.4f} ({global_avg:.4f})"
+        self.window_size = window_size
         self.deque = deque(maxlen=window_size)
         self.total = 0.0
         self.count = 0
@@ -51,6 +52,21 @@ class SmoothedValue(object):
         t = t.tolist()
         self.count = int(t[0])
         self.total = t[1]
+
+    def get_state(self):
+        return {
+            'count': self.count,
+            'total': self.total,
+            'deque': list(self.deque),
+            'fmt': self.fmt,
+            'window_size': self.window_size
+        }
+
+    def load_state(self, state_dict):
+        self.deque = deque(state_dict['deque'], maxlen=state_dict['window_size'])
+        self.count = state_dict['count']
+        self.total = state_dict['total']
+        self.fmt = state_dict['fmt']
 
     @property
     def median(self):
@@ -105,6 +121,18 @@ class MetricLogger(object):
                 v = float(v)
             assert isinstance(v, (float, int))
             self.meters[k].update(v)
+
+    def get_state_dict(self):
+        return {
+            'meters': {k: v.get_state() for k, v in self.meters.items()},
+            'delimiter': self.delimiter
+        }
+
+    def load_state_dict(self, state_dict):
+        self.meters = defaultdict(SmoothedValue)
+        self.delimiter = state_dict['delimiter']
+        for k, v in state_dict['meters'].items():
+            self.meters[k].load_state(v)
 
     def __getattr__(self, attr):
         """动态属性访问，允许直接访问指标"""
@@ -271,7 +299,7 @@ def init_distributed_mode(args):
         print("[Jittor] Running in single-process mode.")
 
 
-def save_model(args, epoch, model, optimizer):
+def save_model(args, epoch, model, optimizer, early_stopper, log_writer, metric_logger, val_metric_logger):
     """保存模型检查点"""
     folder_name = generate_model_folder_name(args)
     output_dir = Path(args.output_dir) / folder_name
@@ -287,6 +315,9 @@ def save_model(args, epoch, model, optimizer):
         'optimizer': optimizer.state_dict(),
         'epoch': epoch,
         'args': args,
+        'early_stopper': early_stopper.get_state(),
+        'metric_logger': metric_logger.get_state_dict(),
+        'val_metric_logger': val_metric_logger.get_state_dict(),
     }
 
     save_on_master(to_save, str(checkpoint_path))
