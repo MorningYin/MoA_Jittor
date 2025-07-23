@@ -138,12 +138,11 @@ class MathDataset_test(Dataset):
     """微调数据集类，支持多种数据格式"""
     
     def __init__(self, 
-                data_paths: str, 
+                data_path: str, 
                 tokenizer_path: str, 
                 max_seq_len = 300,    
                 max_gen_len: int = 128,
                 min_gen_len: int = 64,   
-                max_batch_size: int = 32,
                  **kwargs):
 
         self.kwargs = kwargs
@@ -151,7 +150,6 @@ class MathDataset_test(Dataset):
         self.max_seq_len = max_seq_len
         self.max_gen_len = max_gen_len
         self.min_gen_len = min_gen_len
-        self.max_batch_size = max_batch_size
 
         self.math_prompt = [
         "You are a math tutor. Solve the following word problem step by step. First, carefully read and understand the problem. Then, break down the problem into smaller steps and solve each step logically. Show your work clearly and explain your reasoning. Finally, provide the final answer.\n\n",
@@ -160,7 +158,7 @@ class MathDataset_test(Dataset):
         "### Answer:"
         ]
 
-        self.ann = self.load_data(data_paths)
+        self.ann = self.load_data(data_path)
         tokenizer = Tokenizer(model_path=tokenizer_path)
         self.tokenizer = tokenizer
 
@@ -222,7 +220,8 @@ class MathDataset_test(Dataset):
 
         # 截断输入文本
         instruction_token = instruction_token[:max_input_length]
-        prompt = part1_token + instruction_token + prompt2_token
+        prompt_tokens = part1_token + instruction_token + prompt2_token
+        prompt = jt.array(prompt_tokens, dtype='int32')
 
         output = x['output']
         answer = x['answer']

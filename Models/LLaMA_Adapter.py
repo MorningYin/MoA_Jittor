@@ -121,7 +121,7 @@ class LLaMA_adapter(Module):
 
             return output[:, -1, :]
 
-    def generate(self, prompts, max_gen_len: int = 256, temperature: float = 0.1, top_p: float = 0.75):
+    def generate(self, prompts, max_gen_len: int = 256, temperature: float = 0.1, top_p: float = 0.75, get_weights: bool = False, save_path: str = None):
         """
         文本生成方法，使用自回归方式生成文本
         
@@ -141,7 +141,7 @@ class LLaMA_adapter(Module):
             # ==================== 参数验证和初始化 ====================
             bsz = len(prompts)  # 批次大小
             params = self.llama.params
-            assert bsz <= params.max_batch_size, f'bsz: {bsz}, max_batch_size: {params.max_batch_size}'  # 验证批次大小
+            # assert bsz <= params.max_batch_size, f'bsz: {bsz}, max_batch_size: {params.max_batch_size}'  # 验证批次大小
 
             # ==================== 序列长度计算 ====================
             min_prompt_size = min([len(t) for t in prompts])  # 最小提示长度
@@ -190,6 +190,9 @@ class LLaMA_adapter(Module):
                     break
                 prev_pos = cur_pos
 
+            if get_weights:
+                self.get_weights(tokens, save_path)
+
             # ==================== 结果解码 ====================
             decoded = []
             for i, t in enumerate(tokens.numpy().tolist()):  # 转换为list
@@ -203,3 +206,29 @@ class LLaMA_adapter(Module):
                 decoded.append(self.tokenizer.decode(t))  # 解码为文本
 
             return decoded
+        
+    def get_weights(self, tokens, save_path):
+        # 批量调用所有层的 get_weights
+
+        layer_token_weights = {}
+        layer_type_weights = []
+        for layer in self.llama.layers:
+            token_weight, type_weight = layer.get_weights(tokens)
+            for token, weight in token_weight.items():
+                if token not in layer_token_weights:
+                    layer_token_weights[token] = weight / len(self.llama.layers)
+                else:
+                    layer_token_weights[token] += (weight / len(self.llama.layers))
+            
+            layer_type_weights.append(type_weight)
+
+        res_type = jt.stack(layer_type_weights, dim=0)
+
+        to_save = {
+            'tokens_weight': layer_token_weights,
+            'type_weight': res_type,
+        }
+
+        out_file = os.path.join(save_path, 'weights.pkl')
+        os.makedirs(os.path.dirname(out_file), exist_ok=True)
+        jt.save(to_save, out_file)

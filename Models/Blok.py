@@ -18,15 +18,17 @@ class Module(nn.Module):
         def callback(parents, k, v, n):
             if isinstance(v, Module):
                 v.is_train = True
-                if k == 'attention':
-                    v.clear_cache()
+
+                if hasattr(v, 'clear_cache'):
+                    v.clear_cache()  
+
         self.dfs([], None, callback, None)
 
         # 备份存在时，只恢复可训练参数的梯度状态
         if hasattr(self, "backup_grad_state"):
             for p in self.parameters():
                 pid = id(p)
-                if pid in self._trainable_params and pid in self.backup_grad_state and self.backup_grad_state[pid]:
+                if pid in self.backup_grad_state and self.backup_grad_state[pid]:
                     p.start_grad()
             # 可选：清理备份以避免重复使用
             del self.backup_grad_state
@@ -37,17 +39,18 @@ class Module(nn.Module):
         def callback(parents, k, v, n):
             if isinstance(v, Module):
                 v.is_train = False
-                # 可选：如果有评估特定逻辑，如注意力缓存，添加这里
+
+                if hasattr(v, 'set_cache'):
+                    v.set_cache()  
+
         self.dfs([], None, callback, None)
 
         # 只备份和停止可训练参数的梯度
         self.backup_grad_state = {}
         for p in self.parameters():
             pid = id(p)
-            if pid in self._trainable_params:
-                # 假设 not p.is_stop_grad() 表示 requires_grad=True
-                self.backup_grad_state[pid] = not p.is_stop_grad()
-                p.stop_grad()
+            self.backup_grad_state[pid] = not p.is_stop_grad()
+            p.stop_grad()
         return self
     
     def init(self):
@@ -197,7 +200,10 @@ class MOELoraLayer(Module):
         if self.expert_num == 1:
             result = self.lora_B(self.lora_A(x)) * self.scaling
             result = jt.unsqueeze(type_weight, -1) * result
-            return result
+            if not self.is_train:
+                return result, tokens_weight
+            else:
+                return result
         
         # 多专家模式（MoE LoRA）
         route_weight = nn.softmax(self.router(x), dim=-1)
@@ -221,7 +227,7 @@ class MOELoraLayer(Module):
         result = result * mask
                 
         if not self.is_train:
-            return result, tokens_weight.clone()
+            return result, tokens_weight
         else:
             return result
     
@@ -308,7 +314,7 @@ class PAdapterLayer(Module):
             x = x * jt.unsqueeze(type_weight, -1)
 
             if not self.is_train:
-                return x * mask, tokens_weight.clone()
+                return x * mask, tokens_weight
             else:
                 return x * mask
 
@@ -331,7 +337,7 @@ class PAdapterLayer(Module):
         result = result * mask
                 
         if not self.is_train:
-            return result, tokens_weight.clone()
+            return result, tokens_weight
         else:
             return result
 
@@ -453,7 +459,7 @@ class FeedForward(Module):
                 out = self.w2(out)
             
             if not self.is_train:
-                return out, jt.stack(tokens_weights, dim=2)
+                return out, tokens_weights
             else:
                 return out
         
@@ -666,7 +672,7 @@ class Attention(Module):
         else:
             output = self.wo(output)
         
-        if not self.is_train and len(tokens_weights) > 0:
-            return output, jt.stack(tokens_weights, dim=2)
+        if not self.is_train:
+            return output, tokens_weights
         else:
             return output

@@ -101,25 +101,25 @@ def prepare_args(data_path):
         '--llama_path', '/hy-tmp/LLaMA/original',
         '--data_path',  data_path,
         '--device', 'cuda',
-        '--batch_size', '16',
+        '--batch_size', '10',
         '--epochs', '5',
         '--max_seq_len', '300',
         '--lr', '5e-5',
         '--accum_iter', '1',
         '--lora_layers', '0-32',
         '--lora_rank', '8',
-        '--lora_targets', 'Q,K,V,O',
+        '--lora_targets', 'Q,K,V,O,FFN_UP',
         '--prompt_layers', '0-32',
         '--p_adapter_layers', '0-32',
         '--swi_x', '1',
-        '--seed', '0',
+        '--seed', '125',
         '--output_dir', '/root/MoA_Jittor/Output',
-        '--early_stop_patience', '5',
+        '--early_stop_patience', '8',
         '--sparse', 'True',
         '--if_trainable_gamma', 'True',
         '--gamma', '0.5',
         '--trainable_params', 'False',
-        '--checkpoint_path', '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr5e-5_bs2_Debug_seed0/checkpoint-0.pth'
+        '--checkpoint_path', '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr5e-5_bs14_AddSub_seed0/checkpoint-1.pth'
     ]
     args = get_args_parser().parse_args(default_cli)
 
@@ -163,7 +163,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     # 配置优化器
     param_groups = add_weight_decay(model, args.weight_decay)
     optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
-    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
+    early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.001, mode='min')
 
     if args.trainable_params:
         checkpoint = jt.load(args.checkpoint_path)

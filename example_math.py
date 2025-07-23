@@ -19,7 +19,8 @@ import jittor as jt
 
 from Models.LLaMA_Adapter import LLaMA_adapter
 from Models.ModelArgs import ModelArgs
-from Utils.misc import init_distributed_mode
+from Utils.misc import setup_for_distributed
+from Data.MathDataset import MathDataset_test
 
 jt.flags.auto_mixed_precision_level = 1
 
@@ -46,6 +47,32 @@ prompt_input = [(
                 ),
                 "\n\n### Input:\n",
                 "\n\n### Response:"]
+
+
+def load_data(data_path):
+        
+        ann = []
+        with open(data_path, "r", encoding='utf8') as f:
+            # 尝试加载为完整JSON数组
+            try:
+                data = json.load(f)
+                if isinstance(data, list):
+                    # 如果是JSON数组，直接使用
+                    ann = data
+                else:
+                    # 如果是单个对象，包装成列表
+                    ann = [data]
+            except json.JSONDecodeError:
+                # 如果失败，尝试按行读取JSONL格式
+                f.seek(0)  # 重置文件指针
+                lines = f.readlines()
+                for line in lines:
+                    line = line.strip()
+                    if line:  # 跳过空行
+                        obj = json.loads(line)
+                        ann.append(obj)
+
+        return ann
 
 def load(llama_path, adapter_path: str, max_seq_len=None, max_batch_size: int = 32):
     """
@@ -80,7 +107,7 @@ def load(llama_path, adapter_path: str, max_seq_len=None, max_batch_size: int = 
     model = LLaMA_adapter(model_args, llama_ckpt_dir, llama_tokenzier_path)
 
     # 加载adapter权重到模型
-    model.load_state_dict(adapter_ckpt['trainable_params'])
+    model.load_state_dict(adapter_ckpt['trainable_params'][1])
     
     # # 统计可训练参数数量并保存
     # trainable_params_sum = 0
@@ -109,13 +136,13 @@ def split_list(lst, size):
     return [lst[i:i+size] for i in range(0, len(lst), size)]
 
 def main(
-    ckpt_dir: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',          # LLaMA基础模型目录
-    adapter_path: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/commonsense_15k/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr1e-4_bs16_commonsense_15k_seed1234/checkpoint-0.pth',       # Adapter权重文件路径
-    data_path: str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/Data/Dataset/commonsense_15k/test.json',          # 输入数据文件路径
-    save_path:str = '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/MoA_Jittor/output/Test',           # 输出结果保存路径
+    ckpt_dir: str = '/hy-tmp/LLaMA/original',          # LLaMA基础模型目录
+    adapter_path: str = '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q,K,V,O_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr5e-5_bs10_AddSub_seed0/checkpoint-2.pth',       # Adapter权重文件路径
+    data_path: str = '/root/MoA_Jittor/Data/Dataset/math_commonsense/AddSub/test.json',          # 输入数据文件路径
+    save_path: str = '/root/MoA_Jittor/Test',           # 输出结果保存路径
     temperature: float = 0.1, # 生成温度参数
     top_p: float = 0.75,     # top-p采样参数
-    max_seq_len = 300,      # 最大序列长度
+    max_seq_len: int = 300,  # 最大序列长度
     max_gen_len: int = 128,  # 最大生成长度
     min_gen_len: int = 64,   # 最小生成长度
     max_batch_size: int = 32, # 最大批次大小
@@ -146,42 +173,112 @@ def main(
     model.float_auto()
     model.eval()
 
-    test_dataset = MathDataset_test(data_path, 
-        model.tokenizer, 
-        max_seq_len=max_seq_len, 
-        max_gen_len=max_gen_len, 
-        min_gen_len=min_gen_len, 
-        max_batch_size=max_batch_size, 
-        batch_size=16)
+    math_prompt = [
+        "You are a math tutor. Solve the following word problem step by step. First, carefully read and understand the problem. Then, break down the problem into smaller steps and solve each step logically. Show your work clearly and explain your reasoning. Finally, provide the final answer.\n\n",
+        "### Problem:",
+        "### Solution:",    
+        "### Answer:"
+    ]
 
-    results = []
-                
-    for prompts, output, answer in test_dataset:
-        # 使用模型生成文本
-        result = model.generate(prompts, max_gen_len=max_gen_len, temperature=temperature, top_p=top_p)
-        results.extend(result)
+    ann = load_data(data_path)
+
+    # 数据分片处理（多GPU并行）
+    local_num = math.ceil(len(ann)/world_size)
+    local_ann = ann[local_rank*local_num:(local_rank+1)*local_num]
+    batchs = split_list(local_ann, max_batch_size)
+    print(f'local examples:{len(local_ann)}')
+
+    max_seq_len = model.llama.params.max_seq_len
+    
+    # 初始化正确率统计
+    correct_count = 0
+    total_count = 0
 
     # 构建保存路径
     adapter_name = os.path.basename(os.path.dirname(adapter_path))
-    data_name    = os.path.basename(os.path.dirname(data_path))
+    data_name = os.path.basename(os.path.dirname(data_path))
+    save_path = os.path.join(save_path, data_name)
+    os.makedirs(save_path, exist_ok=True)
     filename = f"{adapter_name}_{data_name}.txt"
     final_save_path = os.path.join(save_path, filename)
-    
-    # 创建输出目录
-    os.makedirs(os.path.dirname(final_save_path), exist_ok=True)
 
-    # 然后打开文件（如果不存在就新建，如果存在则追加）
+    # 批量生成文本
+    for i, batch in enumerate(tqdm(batchs)):
+        prompts = []
+        outputs = []
+        answers = []
+        for x in batch:
+            prompt0 = math_prompt[0]
+            prompt1 = math_prompt[1]
+            instruction = x['instruction']
+            prompt2 = math_prompt[2]
+
+            # 分别编码各个部分
+            prompt0_token = model.tokenizer.encode(prompt0, bos=True, eos=False) # bos
+            prompt1_token = model.tokenizer.encode(prompt1, bos=False, eos=False)
+            instruction_token = model.tokenizer.encode(instruction, bos=False, eos=False)
+            prompt2_token = model.tokenizer.encode(prompt2, bos=False, eos=False)
+
+            part1_token = prompt0_token + prompt1_token
+            part2_token = prompt2_token
+
+            # 计算最大输入长度，确保有足够空间生成输出
+            max_input_length = max_seq_len - (len(part1_token) + len(part2_token) + min_gen_len)
+
+            # 截断输入文本
+            instruction_token = instruction_token[:max_input_length]
+            prompt = part1_token + instruction_token + part2_token
+
+            output = x['output']
+            answer = x['answer']
+
+            prompts.append(prompt)
+            outputs.append(output)
+            answers.append(answer)
+
+        # 使用模型生成文本
+        results = model.generate(prompts, max_gen_len=max_gen_len, temperature=temperature, top_p=top_p, get_weights=(i == 0), save_path=save_path)
+        
+        # 保存结果并对比答案
+        with open(final_save_path, "a", encoding="utf-8") as f:
+            for i, result in enumerate(results):
+                # 提取答案
+                answer_start = result.find("### Answer:")
+                if answer_start != -1:
+                    generated_answer = result[answer_start + len("### Answer:"):].strip()
+                else:
+                    generated_answer = ""  # 找不到则为空
+                
+                # 对比答案：尝试数值比较，如果失败则字符串比较
+                try:
+                    gen_val = float(generated_answer.strip())
+                    true_val = float(answers[i].strip())
+                    is_correct = abs(gen_val - true_val) < 1e-6  # 浮点数近似相等
+                except ValueError:
+                    # 非数字，回退到字符串匹配
+                    is_correct = generated_answer.strip() == answers[i].strip()
+                
+                correct_count += int(is_correct)
+                total_count += 1
+
+                tmp = {
+                    'generate': result,
+                    'output': outputs[i],
+                    'instruction': prompts[i],
+                    'answer': answers[i],
+                    'generated_answer': generated_answer,
+                    'is_correct': is_correct
+                }
+                f.write(json.dumps(tmp, ensure_ascii=False) + "\n")
+        
+        # 在每个 batch 后同步（分布式环境）
+        if jt.in_mpi:
+            jt.sync_all()
+
+    # 计算并保存正确率
+    accuracy = correct_count / total_count if total_count > 0 else 0.0
     with open(final_save_path, "a", encoding="utf-8") as f:
-        for i, result in enumerate(results):
-            tmp = {
-                'generate':      result,
-                'output':        batch[i]['output'],
-                'input':         batch[i]['input'],
-                'instruction':   batch[i]['instruction'],
-                'answer':        batch[i].get('answer', '')
-            }
-            f.write(json.dumps(tmp, ensure_ascii=False) + "\n")
-
+        f.write(f"\nAccuracy: {correct_count}/{total_count} = {accuracy:.4f}\n")
 
 if __name__ == "__main__":
     fire.Fire(main)

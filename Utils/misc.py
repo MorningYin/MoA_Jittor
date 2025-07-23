@@ -448,3 +448,24 @@ def find_latest_checkpoint(output_dir, folder_name=None):
     
     latest_checkpoint = max(checkpoints, key=lambda x: int(x.stem.split('-')[1]))
     return str(latest_checkpoint)
+
+def get_first_notpid(tokens: jt.Var):
+    assert len(tokens.shape) == 2, f'tokens.shape: {tokens.shape}'
+
+    # 假设 tokens.shape = [B, L]
+    B, L = tokens.shape
+
+    # 1. 构造一个 mask，True 表示该位置不是 -1
+    mask = tokens != -1               # shape [B, L]
+
+    # 2. 把序列在第 1 维（长度维）上反转
+    rev_mask = mask[:, ::-1]          # shape [B, L]，第 0 维不动，第 1 维反转
+
+    # 3. 找出反转后第一个 True 的位置（就是原序列从右向左的第一个非 -1）
+    #    argmax 会返回第一个最大值（True=1, False=0）的位置索引
+    pos_from_right, _ = jt.argmax(rev_mask, dim=1)  # 取元组的第二个元素，shape [B]
+
+    # 4. 把“从右边数来”的索引，映射回原来的坐标
+    last_valid_idx = (L - 1) - pos_from_right    # shape [B]
+
+    return last_valid_idx

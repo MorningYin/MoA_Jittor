@@ -72,7 +72,6 @@ class FinetuneDataset(Dataset):
                 obj = json.loads(line)
                 ann.append(obj)
             self.ann = ann
-        elif ''
         else:
             # Alpaca格式：标准指令微调格式
             self.ann = json.load(open(data_path))
