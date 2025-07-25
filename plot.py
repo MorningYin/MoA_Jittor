@@ -27,7 +27,8 @@ def load_weights(save_path):
     return data['tokens_weight'], data['type_weight']
 
 tokenizer = Tokenizer(model_path='/hy-tmp/LLaMA/original/tokenizer.model')  # 替换为你的 tokenizer 路径
-adapter_types = ['LoRAQ', 'LoRAK', 'LoRAV', 'Prompt', 'LoRAO', 'LoRAUP', 'ParallelAdapter']  # 根据图调整
+# adapter_types = ['LoRAQ', 'LoRAK', 'LoRAV', 'Prompt', 'LoRAO', 'LoRAUP', 'ParallelAdapter']  # 根据图调整
+adapter_types = ['LoRAQ_1', 'LoRAQ_2', 'LoRAQ_3', 'LoRAQ_4', 'LoRAQ_5', 'LoRAQ_6', 'LoRAQ_7']  # 根据图调整
 
 # 自定义颜色点（可选修改）
 custom_color_points1 = [
@@ -80,7 +81,7 @@ def plot_token_weight_heatmap(token_weights, save_path, cmap):
     
 # 主函数
 if __name__ == '__main__':
-    save_path = '/root/MoA_Jittor/Test_seed125/AddSub'  # 替换为你的路径
+    save_path = '/root/MoA_Jittor/Test_seed125_MoE/AddSub'  # 替换为你的路径
     token_weights, type_weight = load_weights(save_path)
     
     # 创建自定义颜色映射

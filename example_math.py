@@ -137,16 +137,16 @@ def split_list(lst, size):
 
 def main(
     ckpt_dir: str = '/hy-tmp/LLaMA/original',          # LLaMA基础模型目录
-    adapter_path: str = '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q,K,V,O,FFN_UP_Prompt_0-32_len10_PAdapter_0-32_size16_swi_x1_lr5e-5_bs8_AddSub_seed125/checkpoint-4.pth',       # Adapter权重文件路径
-    data_path: str = '/root/MoA_Jittor/Data/Dataset/math_commonsense/AQuA/test.json',          # 输入数据文件路径
-    save_path: str = '/root/MoA_Jittor/Test_seed125',           # 输出结果保存路径
+    adapter_path: str = '/root/MoA_Jittor/Output/LoRA_0-32_r8_a8_Q_MoE_expert7_swi_x1_lr5e-5_bs8_AddSub_seed125/checkpoint-3.pth',       # Adapter权重文件路径
+    data_path: str = '/root/MoA_Jittor/Data/Dataset/math_commonsense/AddSub/test.json',          # 输入数据文件路径
+    save_path: str = '/root/MoA_Jittor/Test_seed125_MoE',           # 输出结果保存路径
     temperature: float = 0.1, # 生成温度参数
     top_p: float = 0.75,     # top-p采样参数
     max_seq_len: int = 300,  # 最大序列长度
     max_gen_len: int = 128,  # 最大生成长度
     min_gen_len: int = 64,   # 最小生成长度
     max_batch_size: int = 32, # 最大批次大小
-    if_save_type: str = False, # 是否保存结果
+    if_save_type: str = True, # 是否保存结果
 ):
     """
     主函数：使用LLaMA-Adapter模型进行文本生成

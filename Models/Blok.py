@@ -4,7 +4,7 @@ from jittor import nn
 F = nn  # type: ignore
 from typing import Optional
 from .ModelArgs import ModelArgs
-from .utils import apply_rotary_emb, repeat_kv
+from .utils import apply_rotary_emb, repeat_kv, gumbel_sigmoid
 from typing import cast
 from jittor import init
 
@@ -84,14 +84,27 @@ class RMSNorm(Module):
         return output * self.weight
 
 
+class GatedModule(Module):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, logit, x):
+        """
+        score: 任意形状的打分张量
+        x:     待门控激活的特征张量，需与 score 形状可广播
+        """
+        gate  = gumbel_sigmoid(logit, tau=0.7, hard=True)
+        return gate * x
+
+
 class Gamma(Module):
-    def __init__(self, input_dim:int, if_trainable:bool=False, gamma:float=0.5):
+    def __init__(self, input_dim:int, expert_num:int, if_trainable:bool=False, gamma:float=0.5):
         super().__init__()
         self.gamma = jt.array(gamma)
         self.rate = jt.array([[[1.]]])
 
         if if_trainable:
-            self.linear = nn.Linear(input_dim, 1, bias=True)
+            self.linear = nn.Linear(input_dim, expert_num, bias=True)
     
     def execute(self, x):
 
@@ -114,11 +127,13 @@ class MOELoraLayer(Module):
 
         if sparse:
             if if_trainable_gamma:
-                self.gamma = Gamma(input_dim, if_trainable=True, gamma=gamma)
+                self.gamma = Gamma(input_dim, expert_num, if_trainable=True, gamma=gamma)
             else:
-                self.gamma = Gamma(input_dim, if_trainable=False, gamma=gamma)
+                self.gamma = Gamma(input_dim, expert_num, if_trainable=False, gamma=gamma)
         else:
-            self.gamma = Gamma(input_dim, if_trainable=False, gamma=0)
+            self.gamma = Gamma(input_dim, expert_num, if_trainable=False, gamma=0)
+
+        self.gated_module = GatedModule()
 
         # 单专家模式（标准LoRA）
         if expert_num == 1:
@@ -197,8 +212,11 @@ class MOELoraLayer(Module):
 
         # 单专家模式（标准LoRA）
         if self.expert_num == 1:
+            logit = type_weight.unsqueeze(-1) - tokens_weight
+            x = self.gated_module(logit, x)
+
             result = self.lora_B(self.lora_A(x)) * self.scaling 
-            result = jt.unsqueeze(type_weight, -1) * result * tokens_weight
+            result = jt.unsqueeze(type_weight, -1) * result
             if self.is_train:
                 return result
             else:
@@ -207,17 +225,18 @@ class MOELoraLayer(Module):
         
         # 多专家模式（MoE LoRA）
         route_weight = jt.sigmoid(self.router(x))
-        weight = route_weight * tokens_weight
+        logit = route_weight - tokens_weight
+        x = self.gated_module(logit, x)
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(weight[:,:,i], -1) * b_layer(self.lora_A(x)) * self.scaling
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(self.lora_A(x)) * self.scaling
             else:
                 a_layer = cast(nn.Linear, self.lora_A_l[i])
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(weight[:,:,i], -1) * b_layer(a_layer(x)) * self.scaling
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(a_layer(x)) * self.scaling
             
             if i == 0:
                 result = tmp
@@ -250,6 +269,7 @@ class PAdapterLayer(Module):
             self.gamma = Gamma(hidden_size, if_trainable=False, gamma=0)
 
         self.adapter_act_fn = nn.SiLU()
+        self.gated_module = GatedModule()
 
         # 单专家模式（标准Parallel Adapter）
         if expert_num == 1:
@@ -305,10 +325,13 @@ class PAdapterLayer(Module):
 
         # 单专家模式（标准Parallel Adapter）
         if self.expert_num == 1:
+            logit = type_weight.unsqueeze(-1) - tokens_weight
+            x = self.gated_module(logit, x)
+
             x = self.down_proj(x)
             x = self.adapter_act_fn(x)
             x = self.up_proj(x)
-            x = x * jt.unsqueeze(type_weight, -1) * tokens_weight
+            x = x * jt.unsqueeze(type_weight, -1)
 
             if not self.is_train:
                 return x, tokens_weight, None
@@ -317,14 +340,15 @@ class PAdapterLayer(Module):
 
         # 多专家模式（MoE Parallel Adapter）
         route_weight = jt.sigmoid(self.router(x))
-        weight = route_weight * tokens_weight
+        logit = route_weight - tokens_weight
+        x = self.gated_module(logit, x)
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
-                tmp = jt.unsqueeze(weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x)))
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x)))
             else:
-                tmp = jt.unsqueeze(weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x)))
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x)))
             
             if i == 0:
                 result = tmp
@@ -417,6 +441,7 @@ class FeedForward(Module):
 
     def execute(self, x: jt.Var, type_weight: Optional[jt.Var]):
         tokens_weights = []
+        Multi_type_weight = None
 
         if self.w_lora:
             type_idx = 0
@@ -470,11 +495,13 @@ class Attention(Module):
 
         if sparse:
             if if_trainable_gamma:
-                self.gamma = Gamma(args.dim, if_trainable=True, gamma=gamma)
+                self.gamma = Gamma(args.dim, args.expert_num, if_trainable=True, gamma=gamma)
             else:
-                self.gamma = Gamma(args.dim, if_trainable=False, gamma=gamma)
+                self.gamma = Gamma(args.dim, args.expert_num, if_trainable=False, gamma=gamma)
         else:
-            self.gamma = Gamma(args.dim, if_trainable=False, gamma=0)
+            self.gamma = Gamma(args.dim, args.expert_num, if_trainable=False, gamma=0)
+        
+        self.gated_module = GatedModule()
 
         # 注意力头配置
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
@@ -544,6 +571,7 @@ class Attention(Module):
         """前向传播方法"""
         bsz, seqlen, _ = x.shape
         tokens_weights = []
+        Multi_type_weight = None
         
         # 基础线性变换
         xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
@@ -615,9 +643,8 @@ class Attention(Module):
 
         # Prompt Tuning处理
         if self.w_prompt:
-
-            tokens_weight = self.gamma(x)
-            mask = jt.unsqueeze(type_weight[:, :, type_idx], -1) > tokens_weight
+            logit = type_weight[:, :, type_idx].unsqueeze(-1) - self.gamma(x)
+            x = self.gated_module(logit, x)
 
             prompt = self.prompt.weight.reshape(self.args.expert_num, self.args.prompt_len, self.args.dim)
             prompt_k = self.wk(prompt).reshape(1, self.args.expert_num * self.args.prompt_len, self.n_local_kv_heads, self.head_dim).repeat(bsz, 1, 1, 1)
@@ -646,8 +673,8 @@ class Attention(Module):
             if self.args.expert_num >1:
                 prompt_weight = jt.sigmoid(self.prompt_router(x))
                 tokens_weight = self.gamma(x)
-                mask = prompt_weight > tokens_weight
-                prompt_weight = prompt_weight * mask
+                logit = prompt_weight - tokens_weight
+                x = self.gated_module(logit, x)
                 experts_output = jt.sum(prompt_weight.unsqueeze(-1) * experts_output, dim=2)
                 Multi_type_weight = prompt_weight
             elif self.args.expert_num == 1:

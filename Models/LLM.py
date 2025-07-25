@@ -58,7 +58,7 @@ class TransformerBlock(Module):
 
     def set_cache(self):
         self.cache_tokens_weights = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.adapter_type))
-        self.cache_type_weights = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.adapter_type))
+        self.cache_type_weights = jt.zeros((self.args.max_batch_size, self.args.max_seq_len, self.adapter_type * self.args.expert_num))
 
     def clear_cache(self):
         self.cache_tokens_weights = None
@@ -71,6 +71,8 @@ class TransformerBlock(Module):
     def execute(self, x: jt.Var, start_pos: int, freqs_cis: jt.Var, mask: Optional[jt.Var]):
         bsz, seqlen, _ = x.shape
         tokens_weights = []
+        Multi_type_weight = None
+
         # 计算类型权重
         if self.adapter_type > 1:
             type_weights = jt.sigmoid(self.adapter_type_router(x))
@@ -78,7 +80,7 @@ class TransformerBlock(Module):
             type_weights = jt.ones((bsz, seqlen, self.adapter_type))
         type_idx = 0
         if not self.is_train:
-            attention_out, tokens_weight, Multi_type_weight = self.attention(
+            attention_out, tokens_weight, tmp_Multi_type_weight = self.attention(
                 self.attention_norm(x),
                 start_pos,
                 freqs_cis,
@@ -87,6 +89,8 @@ class TransformerBlock(Module):
             )
             h = x + attention_out
             tokens_weights.extend(tokens_weight)
+            if tmp_Multi_type_weight is not None:
+                Multi_type_weight = tmp_Multi_type_weight
         else:
             h = x + self.attention(
                 self.attention_norm(x),
@@ -99,11 +103,13 @@ class TransformerBlock(Module):
         residual = h
         h = self.ffn_norm(h)
         if not self.is_train:
-            out, tokens_weight, Multi_type_weight = self.feed_forward(
+            out, tokens_weight, tmp_Multi_type_weight = self.feed_forward(
                 h,
                 type_weight=type_weights[:,:,type_idx:type_idx+self.FFN_type]
             )
             tokens_weights.extend(tokens_weight)
+            if tmp_Multi_type_weight is not None:
+                Multi_type_weight = tmp_Multi_type_weight
         else:
             out = self.feed_forward(
                 h,
@@ -112,9 +118,11 @@ class TransformerBlock(Module):
         type_idx += self.FFN_type
         if self.w_padapter:
             if not self.is_train:
-                adapter_states, tokens_weight, Multi_type_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
+                adapter_states, tokens_weight, tmp_Multi_type_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
                 tokens_weights.append(tokens_weight)
                 out = out + adapter_states
+            if tmp_Multi_type_weight is not None:
+                Multi_type_weight = tmp_Multi_type_weight
             else:
                 out = out + self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
         out = residual + out

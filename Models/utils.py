@@ -124,3 +124,35 @@ def sample_top_p(probs, p):
     # 还原到原始索引
     next_token = jt.gather(probs_idx, -1, next_token)
     return next_token
+
+
+# ———————— 1. 采样 Gumbel 噪声 ————————
+def sample_gumbel(shape, eps=1e-10):
+    """
+    返回标准 Gumbel(0,1) 噪声张量
+    G = -log(-log(U)),  U ~ Uniform(0,1)
+    """
+    U = jt.rand(shape)              # 均匀分布 [0,1)
+    return -jt.log(-jt.log(U + eps) + eps)
+
+
+# ———————— 2. Gumbel-Sigmoid 门控 ————————
+def gumbel_sigmoid(logit, tau=1.0, hard=False):
+    """
+    输入:
+      logit: 任意形状的打分张量 (score - gamma)
+      tau: 温度参数，控制“软硬”程度
+      hard: 是否在 forward 用 0/1 硬门控 + STE
+    返回:
+      与 logit 同形状的 p ∈ [0,1]
+    """
+    g = sample_gumbel(logit.shape)      # 同形状 Gumbel 噪声
+    y = jt.sigmoid((logit + g) / tau)   # 软化版概率
+
+    if hard:
+        # Straight-Through Estimator:
+        y_hard = (y > 0.5).float()
+        # forward 用 y_hard, backward 用 y 的梯度
+        y = (y_hard - y).detach() + y
+
+    return y
