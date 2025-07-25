@@ -186,7 +186,7 @@ def train_one_epoch(model: LLaMA_adapter,
             log_writer.add_scalar('lr', float(lr), epoch_1000x)
 
         # 新增: 每隔val_interval个batch进行验证
-        if val_loader is not None and (current_step + 1) % val_interval == 0:
+        if val_loader is not None and ((current_step + 1) % val_interval == 0 or current_step == len(data_loader) - 1):
             val_loss = 0
 
             with jt.no_grad():

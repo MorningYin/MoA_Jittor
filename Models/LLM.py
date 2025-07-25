@@ -72,10 +72,13 @@ class TransformerBlock(Module):
         bsz, seqlen, _ = x.shape
         tokens_weights = []
         # 计算类型权重
-        type_weights = jt.sigmoid(self.adapter_type_router(x))
+        if self.adapter_type > 1:
+            type_weights = jt.sigmoid(self.adapter_type_router(x))
+        else:
+            type_weights = jt.ones((bsz, seqlen, self.adapter_type))
         type_idx = 0
         if not self.is_train:
-            attention_out, tokens_weight = self.attention(
+            attention_out, tokens_weight, Multi_type_weight = self.attention(
                 self.attention_norm(x),
                 start_pos,
                 freqs_cis,
@@ -96,7 +99,7 @@ class TransformerBlock(Module):
         residual = h
         h = self.ffn_norm(h)
         if not self.is_train:
-            out, tokens_weight = self.feed_forward(
+            out, tokens_weight, Multi_type_weight = self.feed_forward(
                 h,
                 type_weight=type_weights[:,:,type_idx:type_idx+self.FFN_type]
             )
@@ -109,7 +112,7 @@ class TransformerBlock(Module):
         type_idx += self.FFN_type
         if self.w_padapter:
             if not self.is_train:
-                adapter_states, tokens_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
+                adapter_states, tokens_weight, Multi_type_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
                 tokens_weights.append(tokens_weight)
                 out = out + adapter_states
             else:
@@ -119,7 +122,10 @@ class TransformerBlock(Module):
         if not self.is_train and len(tokens_weights) > 0:
             tokens_weights = jt.stack(tokens_weights, dim=2)
             self.cache_tokens_weights[:bsz, start_pos : start_pos + seqlen] = tokens_weights.squeeze(-1)
-            self.cache_type_weights[:bsz, start_pos : start_pos + seqlen] = type_weights
+            if Multi_type_weight is not None:
+                self.cache_type_weights[:bsz, start_pos : start_pos + seqlen] = Multi_type_weight
+            else:
+                self.cache_type_weights[:bsz, start_pos : start_pos + seqlen] = type_weights
 
         return out
 

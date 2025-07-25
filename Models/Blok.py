@@ -54,7 +54,7 @@ class Module(nn.Module):
         return self
     
     def init(self):
-        ''' 将模块设置为评估eval模式。 '''
+        ''' 重新初始化权重，用于重新训练 '''
         def callback(parents, k, v, n):
             if isinstance(v, Module):
                 v.init_weights()
@@ -70,8 +70,8 @@ class RMSNorm(Module):
     
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
-        self.eps = jt.array(eps, dtype='float16')
-        self.weight = nn.Parameter(jt.ones(dim, dtype='float16'))
+        self.eps = jt.array(eps)
+        self.weight = nn.Parameter(jt.ones(dim))
 
     def _norm(self, x):
         """执行RMS归一化"""
@@ -91,7 +91,7 @@ class Gamma(Module):
         self.rate = jt.array([[[1.]]])
 
         if if_trainable:
-            self.linear = nn.Linear(input_dim, 1, bias=False)
+            self.linear = nn.Linear(input_dim, 1, bias=True)
     
     def execute(self, x):
 
@@ -194,40 +194,38 @@ class MOELoraLayer(Module):
         """前向传播方法"""
 
         tokens_weight = self.gamma(x)
-        mask = jt.unsqueeze(type_weight, -1) > tokens_weight
 
         # 单专家模式（标准LoRA）
         if self.expert_num == 1:
-            result = self.lora_B(self.lora_A(x)) * self.scaling
-            result = jt.unsqueeze(type_weight, -1) * result
-            if not self.is_train:
-                return result, tokens_weight
-            else:
+            result = self.lora_B(self.lora_A(x)) * self.scaling 
+            result = jt.unsqueeze(type_weight, -1) * result * tokens_weight
+            if self.is_train:
                 return result
+            else:
+                return result, tokens_weight, None
+
         
         # 多专家模式（MoE LoRA）
-        route_weight = nn.softmax(self.router(x), dim=-1)
-        route_weight = route_weight * jt.unsqueeze(type_weight, -1)
+        route_weight = jt.sigmoid(self.router(x))
+        weight = route_weight * tokens_weight
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(self.lora_A(x)) * self.scaling
+                tmp = jt.unsqueeze(weight[:,:,i], -1) * b_layer(self.lora_A(x)) * self.scaling
             else:
                 a_layer = cast(nn.Linear, self.lora_A_l[i])
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(a_layer(x)) * self.scaling
+                tmp = jt.unsqueeze(weight[:,:,i], -1) * b_layer(a_layer(x)) * self.scaling
             
             if i == 0:
                 result = tmp
             else:
                 result = result + tmp
-            
-        result = result * mask
                 
         if not self.is_train:
-            return result, tokens_weight
+            return result, tokens_weight, route_weight
         else:
             return result
     
@@ -255,8 +253,8 @@ class PAdapterLayer(Module):
 
         # 单专家模式（标准Parallel Adapter）
         if expert_num == 1:
-            self.down_proj = nn.Linear(hidden_size, adapter_size).float16()
-            self.up_proj = nn.Linear(adapter_size, hidden_size).float16()
+            self.down_proj = nn.Linear(hidden_size, adapter_size, bias=True).float16()
+            self.up_proj = nn.Linear(adapter_size, hidden_size, bias=True).float16()
             
         # 多专家模式（MoE Parallel Adapter）
         elif expert_num > 1:
@@ -264,16 +262,16 @@ class PAdapterLayer(Module):
             
             # 降维投影设置
             if hydra:
-                self.down_proj = nn.Linear(hidden_size, adapter_size).float16()
+                self.down_proj = nn.Linear(hidden_size, adapter_size, bias=True).float16()
             else:
                 self.down_proj_l = nn.ModuleList()
                 for i in range(expert_num):
-                    self.down_proj_l.append(nn.Linear(hidden_size, adapter_size).float16())
+                    self.down_proj_l.append(nn.Linear(hidden_size, adapter_size, bias=True).float16())
                 
             # 升维投影设置
             self.up_proj_l = nn.ModuleList()
             for i in range(expert_num):
-                self.up_proj_l.append(nn.Linear(adapter_size, hidden_size).float16())
+                self.up_proj_l.append(nn.Linear(adapter_size, hidden_size, bias=True).float16())
         else:
             raise Exception("The number of Experts is wrong")
         
@@ -304,40 +302,37 @@ class PAdapterLayer(Module):
         """前向传播方法"""
 
         tokens_weight = self.gamma(x)
-        mask = jt.unsqueeze(type_weight, -1) > tokens_weight
 
         # 单专家模式（标准Parallel Adapter）
         if self.expert_num == 1:
             x = self.down_proj(x)
             x = self.adapter_act_fn(x)
             x = self.up_proj(x)
-            x = x * jt.unsqueeze(type_weight, -1)
+            x = x * jt.unsqueeze(type_weight, -1) * tokens_weight
 
             if not self.is_train:
-                return x * mask, tokens_weight
+                return x, tokens_weight, None
             else:
-                return x * mask
+                return x
 
         # 多专家模式（MoE Parallel Adapter）
-        route_weight = nn.softmax(self.router(x), dim=-1)
-        route_weight = route_weight * jt.unsqueeze(type_weight, -1)
+        route_weight = jt.sigmoid(self.router(x))
+        weight = route_weight * tokens_weight
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x)))
+                tmp = jt.unsqueeze(weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x)))
             else:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x)))
+                tmp = jt.unsqueeze(weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x)))
             
             if i == 0:
                 result = tmp
             else:
                 result = result + tmp
                 
-        result = result * mask
-                
         if not self.is_train:
-            return result, tokens_weight
+            return result, tokens_weight, route_weight
         else:
             return result
 
@@ -349,11 +344,10 @@ class Router(Module):
         self,
         in_dim: int,
         hidden_dim: int,
-        out_dim: int 
+        out_dim: int,
     ):
         super().__init__()
 
-        # SwiGLU结构组件
         self.w1 = nn.Linear(in_dim, hidden_dim)
         self.w2 = nn.Linear(hidden_dim, out_dim)
         self.w3 = nn.Linear(in_dim, hidden_dim)
@@ -374,7 +368,7 @@ class Router(Module):
     def execute(self, x):
         """前向传播方法"""
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
-    
+
 
 class FeedForward(Module):
     def __init__(
@@ -428,7 +422,7 @@ class FeedForward(Module):
             type_idx = 0
             if 'FFN_UP' in self.lora_targets:
                 if not self.is_train:
-                    lora_out, tokens_weight = self.lora_UP(x, type_weight[:,:,type_idx])
+                    lora_out, tokens_weight, Multi_type_weight = self.lora_UP(x, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     out = self.w3(x) + lora_out
                 else:
@@ -439,7 +433,7 @@ class FeedForward(Module):
 
             if 'FFN_GATE' in self.lora_targets:
                 if not self.is_train:
-                    lora_out, tokens_weight = self.lora_GATE(x, type_weight[:,:,type_idx])
+                    lora_out, tokens_weight, Multi_type_weight = self.lora_GATE(x, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     out = F.silu(self.w1(x) + lora_out) * out
                 else:
@@ -450,7 +444,7 @@ class FeedForward(Module):
 
             if 'FFN_DOWN' in self.lora_targets:
                 if not self.is_train:
-                    lora_out, tokens_weight = self.lora_DOWN(out, type_weight[:,:,type_idx])
+                    lora_out, tokens_weight, Multi_type_weight = self.lora_DOWN(out, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     out = self.w2(out) + lora_out
                 else:
@@ -459,7 +453,7 @@ class FeedForward(Module):
                 out = self.w2(out)
             
             if not self.is_train:
-                return out, tokens_weights
+                return out, tokens_weights, Multi_type_weight
             else:
                 return out
         
@@ -559,7 +553,7 @@ class Attention(Module):
         if self.w_lora:
             if 'Q' in self.lora_targets:
                 if not self.is_train:
-                    out, tokens_weight = self.lora_Q(x, type_weight[:,:,type_idx])
+                    out, tokens_weight, Multi_type_weight = self.lora_Q(x, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     xq = xq + out
                 else:
@@ -567,13 +561,13 @@ class Attention(Module):
                 type_idx += 1
             if 'K' in self.lora_targets:
                 if not self.is_train:
-                    out, tokens_weight = self.lora_K(x, type_weight[:,:,type_idx])
+                    out, tokens_weight, Multi_type_weight = self.lora_K(x, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     xk = xk + out
                 type_idx += 1
             if 'V' in self.lora_targets:
                 if not self.is_train:
-                    out, tokens_weight = self.lora_V(x, type_weight[:,:,type_idx])
+                    out, tokens_weight, Multi_type_weight = self.lora_V(x, type_weight[:,:,type_idx])
                     tokens_weights.append(tokens_weight)
                     xv = xv + out
                 else:
@@ -642,29 +636,31 @@ class Attention(Module):
             prompt_gate = self.prompt_gate.astype(softmax_output.dtype)
             prompt_scores = prompt_gate * softmax_output
 
-            prompt_scores = prompt_scores.reshape(bsz, self.n_local_heads, -1, self.args.expert_num, self.args.prompt_len).transpose(2,3)
+            prompt_scores = prompt_scores.reshape(bsz, self.n_local_heads, self.args.expert_num, -1, self.args.prompt_len)
             prompt_v = prompt_v.reshape(bsz, self.n_local_heads, self.args.expert_num, self.args.prompt_len, self.head_dim)
             
             prompt_scores = prompt_scores.astype(prompt_v.dtype)
             experts_output = jt.matmul(prompt_scores, prompt_v)
-            experts_output = experts_output.permute(0,3,2,1,4).contiguous().reshape(bsz,seqlen,self.args.expert_num, -1)
+            experts_output = experts_output.reshape(bsz,seqlen,self.args.expert_num, -1)
             
             if self.args.expert_num >1:
-                prompt_weight = nn.softmax(self.prompt_router(x), dim=-1)
-                prompt_weight = prompt_weight * type_weight[:,:,type_idx].unsqueeze(-1)
-                experts_output = jt.sum(prompt_weight.unsqueeze(-1) * experts_output, dim=2, keepdims=True)
+                prompt_weight = jt.sigmoid(self.prompt_router(x))
+                tokens_weight = self.gamma(x)
+                mask = prompt_weight > tokens_weight
+                prompt_weight = prompt_weight * mask
+                experts_output = jt.sum(prompt_weight.unsqueeze(-1) * experts_output, dim=2)
+                Multi_type_weight = prompt_weight
             elif self.args.expert_num == 1:
-                experts_output = experts_output * type_weight[:,:,type_idx].unsqueeze(-1).unsqueeze(-1)
+                experts_output = experts_output.squeeze(2) * type_weight[:,:,type_idx].unsqueeze(-1)
             type_idx += 1
             
-            experts_output = experts_output.squeeze(2)
-            output = output + experts_output * mask
+            output = output + experts_output
             tokens_weights.append(tokens_weight)
 
         # 输出投影和LoRA
         if self.w_lora and 'O' in self.lora_targets:
             if not self.is_train:
-                out, tokens_weight = self.lora_O(output, type_weight[:,:,type_idx])
+                out, tokens_weight, Multi_type_weight = self.lora_O(output, type_weight[:,:,type_idx])
                 tokens_weights.append(tokens_weight)
                 output = self.wo(output) + out
             else:
@@ -673,6 +669,6 @@ class Attention(Module):
             output = self.wo(output)
         
         if not self.is_train:
-            return output, tokens_weights
+            return output, tokens_weights, Multi_type_weight
         else:
             return output
