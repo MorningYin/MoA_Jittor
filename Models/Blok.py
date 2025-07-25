@@ -88,13 +88,13 @@ class GatedModule(Module):
     def __init__(self):
         super().__init__()
 
-    def execute(self, logit, x):
+    def execute(self, logit):
         """
         score: 任意形状的打分张量
         x:     待门控激活的特征张量，需与 score 形状可广播
         """
         gate  = gumbel_sigmoid(logit, tau=0.7, hard=True)
-        return gate * x
+        return gate
 
 
 class Gamma(Module):
@@ -213,7 +213,9 @@ class MOELoraLayer(Module):
         # 单专家模式（标准LoRA）
         if self.expert_num == 1:
             logit = type_weight.unsqueeze(-1) - tokens_weight
-            x = self.gated_module(logit, x)
+            gate = self.gated_module(logit)
+
+            x = x * gate
 
             result = self.lora_B(self.lora_A(x)) * self.scaling 
             result = jt.unsqueeze(type_weight, -1) * result
@@ -226,17 +228,17 @@ class MOELoraLayer(Module):
         # 多专家模式（MoE LoRA）
         route_weight = jt.sigmoid(self.router(x))
         logit = route_weight - tokens_weight
-        x = self.gated_module(logit, x)
+        gate = self.gated_module(logit)
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(self.lora_A(x)) * self.scaling
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(self.lora_A(x * gate[:,:,i].unsqueeze(-1))) * self.scaling
             else:
                 a_layer = cast(nn.Linear, self.lora_A_l[i])
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(a_layer(x)) * self.scaling
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(a_layer(x * gate[:,:,i].unsqueeze(-1))) * self.scaling
             
             if i == 0:
                 result = tmp
@@ -326,7 +328,9 @@ class PAdapterLayer(Module):
         # 单专家模式（标准Parallel Adapter）
         if self.expert_num == 1:
             logit = type_weight.unsqueeze(-1) - tokens_weight
-            x = self.gated_module(logit, x)
+            gate = self.gated_module(logit)
+
+            x = x * gate
 
             x = self.down_proj(x)
             x = self.adapter_act_fn(x)
@@ -341,14 +345,14 @@ class PAdapterLayer(Module):
         # 多专家模式（MoE Parallel Adapter）
         route_weight = jt.sigmoid(self.router(x))
         logit = route_weight - tokens_weight
-        x = self.gated_module(logit, x)
+        gate = self.gated_module(logit)
 
         result = None
         for i in range(self.expert_num):
             if self.hydra:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x)))
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x * gate[:,:,i].unsqueeze(-1))))
             else:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x)))
+                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x * gate[:,:,i].unsqueeze(-1))))
             
             if i == 0:
                 result = tmp
@@ -643,9 +647,6 @@ class Attention(Module):
 
         # Prompt Tuning处理
         if self.w_prompt:
-            logit = type_weight[:, :, type_idx].unsqueeze(-1) - self.gamma(x)
-            x = self.gated_module(logit, x)
-
             prompt = self.prompt.weight.reshape(self.args.expert_num, self.args.prompt_len, self.args.dim)
             prompt_k = self.wk(prompt).reshape(1, self.args.expert_num * self.args.prompt_len, self.n_local_kv_heads, self.head_dim).repeat(bsz, 1, 1, 1)
             prompt_v = self.wv(prompt).reshape(1, self.args.expert_num * self.args.prompt_len, self.n_local_kv_heads, self.head_dim).repeat(bsz, 1, 1, 1)
@@ -674,11 +675,14 @@ class Attention(Module):
                 prompt_weight = jt.sigmoid(self.prompt_router(x))
                 tokens_weight = self.gamma(x)
                 logit = prompt_weight - tokens_weight
-                x = self.gated_module(logit, x)
-                experts_output = jt.sum(prompt_weight.unsqueeze(-1) * experts_output, dim=2)
+                gate = self.gated_module(logit)
+                experts_output = jt.sum(prompt_weight.unsqueeze(-1) * experts_output * gate.unsqueeze(-1), dim=2)
                 Multi_type_weight = prompt_weight
             elif self.args.expert_num == 1:
-                experts_output = experts_output.squeeze(2) * type_weight[:,:,type_idx].unsqueeze(-1)
+                tokens_weight = self.gamma(x)
+                logit = type_weight[:,:,type_idx].unsqueeze(-1) - tokens_weight
+                gate = self.gated_module(logit)
+                experts_output = experts_output.squeeze(2) * type_weight[:,:,type_idx].unsqueeze(-1) * gate
             type_idx += 1
             
             output = output + experts_output
