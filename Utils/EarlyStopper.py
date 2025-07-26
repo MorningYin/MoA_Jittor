@@ -1,14 +1,18 @@
 from Models.LLaMA_Adapter import LLaMA_adapter
 from Utils.misc import MetricLogger
 
+
 class EarlyStopper:
     """早停策略实现"""
+    
     def __init__(self, patience: int = 5, min_delta: float = 0.0, mode: str = 'min'):
         """
+        初始化早停器
+        
         Args:
-            patience: 耐心轮次，没有改善后停止。
-            min_delta: 最小改善阈值。
-            mode: 'min' (最小化损失) 或 'max' (最大化准确率)。
+            patience: 耐心轮次
+            min_delta: 最小改善阈值
+            mode: 'min' (最小化损失) 或 'max' (最大化准确率)
         """
         self.patience = patience
         self.min_delta = min_delta
@@ -18,6 +22,7 @@ class EarlyStopper:
         self.early_stop = False
     
     def get_state(self):
+        """获取状态"""
         return {
             'patience': self.patience,
             'min_delta': self.min_delta,
@@ -28,6 +33,7 @@ class EarlyStopper:
         }
 
     def load_state(self, state_dict):
+        """加载状态"""
         self.patience = state_dict['patience']
         self.min_delta = state_dict['min_delta']
         self.mode = state_dict['mode']
@@ -39,18 +45,23 @@ class EarlyStopper:
         """检查是否应该早停"""
         var_logger.synchronize_between_processes()
         val_loss = var_logger.meters['loss'].deque[-1]
+        
         if self.mode == 'min':
             score = val_loss
         else:  # mode == 'max'
             score = -val_loss
 
+        # 检查是否有改善
         if score < self.best_score - self.min_delta:
             self.best_score = score
             self.counter = 0
-            model.best_model_state_dict = (f'Epoch_{epoch}_{data_iter_step}', {name: param.data.copy() for name, param in model.named_parameters() if param.requires_grad})
+            # 保存最佳模型状态
+            model.best_model_state_dict = (f'Epoch_{epoch}_{data_iter_step}', 
+                                         {name: param.data.copy() for name, param in model.named_parameters() if param.requires_grad})
         else:
             self.counter += 1
 
+        # 检查是否触发早停
         if self.counter >= self.patience:
             self.early_stop = True
 

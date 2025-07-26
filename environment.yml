@@ -12,12 +12,25 @@ dependencies:
   - cmake
   - pip
 
-  - pytorch      
+  - pytorch-cpu
   - cpuonly     
+
+  - matplotlib
+  - seaborn
+  - scipy
+
+  - tqdm
 
   - pip:
       - jittor
+      
       - tensorboardX
+      - tensorboard
+      
       - modelscope
       - tiktoken
       - blobfile
+      
+      - fire
+      
+      - pynvml

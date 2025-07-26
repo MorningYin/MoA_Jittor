@@ -17,6 +17,7 @@ from Utils.misc import MetricLogger, SmoothedValue
 from Train.engine_finetune import train_one_epoch
 from tensorboardX import SummaryWriter
 
+# 设置Jittor配置
 jt.flags.log_silent = 1
 jt.flags.auto_mixed_precision_level = 1
 
@@ -33,7 +34,7 @@ def str2bool(v):
 
 
 def get_args_parser():
-    """定义命令行参数"""
+    """定义命令行参数解析器"""
     parser = argparse.ArgumentParser('llama_adapterV2 finetuning', add_help=False)
     
     # 基础训练参数
@@ -97,21 +98,22 @@ def get_args_parser():
 
 
 def prepare_args(data_path):
+    """准备训练参数"""
     default_cli = [
         '--llama_path', '/hy-tmp/LLaMA/original',
         '--data_path',  data_path,
         '--device', 'cuda',
-        '--batch_size', '8',
+        '--batch_size', '7',
         '--epochs', '5',
         '--max_seq_len', '300',
         '--lr', '5e-5',
         '--accum_iter', '1',
         '--lora_layers', '0-32',
         '--lora_rank', '8',
-        '--lora_targets', 'Q',
-        '--expert_num', '7',
-        # '--prompt_layers', '0-32',
-        # '--p_adapter_layers', '0-32',
+        '--lora_targets', 'Q,K,V,O,FFN_UP',
+        '--expert_num', '1',
+        '--prompt_layers', '0-32',
+        '--p_adapter_layers', '0-32',
         '--swi_x', '1',
         '--seed', '125',
         '--output_dir', '/root/MoA_Jittor/Output',
@@ -130,9 +132,11 @@ def prepare_args(data_path):
     return args
 
 def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
+    """微调训练主函数"""
     args = args_list[0]
     llama_tokenzier_path = os.path.join(args.llama_path, 'tokenizer.model')
-    # 创建数据集
+    
+    # 创建训练数据集
     dataset_train = MathDataset(
         data_paths=[args.data_path for args in args_list], 
         tokenizer_path=llama_tokenzier_path, 
@@ -145,6 +149,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     )
     dataset_train.datainit()
 
+    # 创建验证数据集
     dataset_val = MathDataset(
         data_paths=[args.data_path for args in args_list], 
         tokenizer_path=llama_tokenzier_path, 
@@ -161,11 +166,12 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     print(f'训练集大小: {len(dataset_train)}')
     print(f'验证集大小: {len(dataset_val)}')
 
-    # 配置优化器
+    # 配置优化器和早停
     param_groups = add_weight_decay(model, args.weight_decay)
     optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
     early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.001, mode='min')
 
+    # 断点续训处理
     if args.trainable_params:
         checkpoint = jt.load(args.checkpoint_path)
         args.start_epoch = checkpoint['epoch']
@@ -181,6 +187,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
         print(f'断点续训轮数: {args.start_epoch}')
         print(f'断点续训步数: {data_iter_step}')
     else:       
+        # 初始化指标记录器
         metric_logger = MetricLogger(delimiter="  ")
         metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
         metric_logger.add_meter('closs', SmoothedValue(window_size=5, fmt='{median:.6f}'))
@@ -191,7 +198,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
 
         data_iter_step = -1
 
-    # 配置日志
+    # 配置日志记录
     args.log_dir = os.path.join(args.output_dir, 'log')
     
     if get_rank() == 0 and args.log_dir is not None:
@@ -200,7 +207,7 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
     else:
         log_writer = None
 
-    # 开始训练
+    # 开始训练循环
     print(f"============================================ 开始训练  ==================================================")
     start_time = time.time()
     
@@ -223,11 +230,11 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
 
         data_iter_step = -1
 
-        # 保存模型
+        # 保存模型检查点
         if args.output_dir:
             save_model(args=args, epoch=epoch, model=model, optimizer=optimizer, early_stopper=early_stopper, log_writer=log_writer, metric_logger=metric_logger, val_metric_logger=val_metric_logger)
 
-        # 记录日志
+        # 记录训练日志
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      'epoch': epoch,
                      **{f'val_{k}': v for k, v in val_stats.items()}}
@@ -239,13 +246,14 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
             with open(os.path.join(args.output_dir, "log.txt"), mode="a", encoding="utf-8") as f:
                 f.write(json.dumps(log_stats) + "\n")
 
+        # 早停检查
         if early_stopped:
             print(f'================================================== 早停 =======================================================')
             break
 
         print(f'================================================== 第 {epoch} 轮训练完成 =======================================================')
 
-    # 训练完成
+    # 训练完成统计
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('训练时间: {}'.format(total_time_str))
@@ -253,7 +261,8 @@ def finetune(args_list: List[argparse.Namespace], model : LLaMA_adapter):
 
 
 def main(args_list):
-    # 设置设备
+    """主函数"""
+    # 设置设备和分布式训练
     args = args_list[0]
     if args.device == 'cuda':
         jt.flags.use_cuda = 1
@@ -264,10 +273,9 @@ def main(args_list):
     print(f'==================================================== Job Start ====================================================')
     print('工作文件夹: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     
-    
+    # 打印训练参数配置
     print("================================================== 训练参数配置 =====================================================")
     
-    # 按类别分组打印参数
     param_groups = {
         "🔧 基础训练参数": [
             'batch_size', 'epochs', 'accum_iter', 'seed', 'start_epoch'
@@ -305,9 +313,8 @@ def main(args_list):
         for param_name in param_names:
             if hasattr(args, param_name):
                 value = getattr(args, param_name)
-                # 格式化显示
+                # 格式化显示长路径
                 if isinstance(value, str) and len(value) > 50:
-                    # 长路径截断显示
                     display_value = value[:30] + "..." + value[-20:]
                 else:
                     display_value = value
@@ -352,6 +359,7 @@ def main(args_list):
     print("梯度累积次数: %d" % args.accum_iter)
     print("有效批次大小: %d" % eff_batch_size)
 
+    # 开始微调训练
     finetune(args_list, model)
 
     if jt.in_mpi:
@@ -360,9 +368,11 @@ def main(args_list):
     print(f'==================================================== Job End ====================================================')
 
 if __name__ == '__main__':
+    # 定义数据集列表
     datas = ['AddSub/addsub_1.json', 'AQuA/aqua_1.json', 'gsm8k/gsm8k_1.json', 'MultiArith/multiarith_1.json', 'SingleEq/singleeq_1.json', 'SVAMP/svamp_1.json']
     # datas = ['Debug/2.json']
 
+    # 为每个数据集准备参数
     args_list = []
     for data in datas:
         data_path = '/root/MoA_Jittor/Data/Dataset/math_commonsense/' + data

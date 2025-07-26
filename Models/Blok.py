@@ -8,6 +8,17 @@ from .utils import apply_rotary_emb, repeat_kv, gumbel_sigmoid
 from typing import cast
 from jittor import init
 
+# 显存优化配置
+def enable_memory_optimization():
+    """启用显存优化设置"""
+    # 启用梯度检查点
+    jt.flags.use_cuda = 1
+    jt.flags.grad_checkpoint = 1
+    # 启用内存优化
+    jt.flags.amp_level = 1  # 自动混合精度
+    jt.flags.use_parallel_op_compiler = 1
+    jt.flags.lazy_execution = 1
+
 
 class Module(nn.Module):
     def __init__(self, *args, **kwargs):
@@ -230,26 +241,97 @@ class MOELoraLayer(Module):
         logit = route_weight - tokens_weight
         gate = self.gated_module(logit)
 
-        result = None
-        for i in range(self.expert_num):
-            if self.hydra:
+        # 预分配结果张量以减少内存碎片
+        if self.hydra:
+            # Hydra模式：共享A矩阵，优化内存使用
+            shared_a_output = self.lora_A(x)
+            result = jt.zeros_like(x)
+            
+            for i in range(self.expert_num):
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(self.lora_A(x * gate[:,:,i].unsqueeze(-1))) * self.scaling
-            else:
+                # 直接计算，避免不必要的unsqueeze
+                expert_output = b_layer(shared_a_output * gate[:,:,i:i+1]) * self.scaling
+                # 使用原地操作减少内存分配
+                result += route_weight[:,:,i:i+1] * expert_output
+        else:
+            # 标准模式：每个专家独立的A矩阵
+            result = jt.zeros_like(x)
+            
+            for i in range(self.expert_num):
                 a_layer = cast(nn.Linear, self.lora_A_l[i])
                 b_layer = cast(nn.Linear, self.lora_B_l[i])
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * b_layer(a_layer(x * gate[:,:,i].unsqueeze(-1))) * self.scaling
-            
-            if i == 0:
-                result = tmp
-            else:
-                result = result + tmp
+                # 合并操作减少中间变量
+                expert_output = b_layer(a_layer(x * gate[:,:,i:i+1])) * self.scaling
+                # 使用原地操作
+                result += route_weight[:,:,i:i+1] * expert_output
                 
         if not self.is_train:
             return result, tokens_weight, route_weight
         else:
             return result
     
+    def execute_batch_optimized(self, x: jt.Var, type_weight: Optional[jt.Var]):
+        """优化的批处理执行方法，进一步减少显存使用"""
+        
+        tokens_weight = self.gamma(x)
+        
+        # 单专家模式（标准LoRA）
+        if self.expert_num == 1:
+            logit = type_weight.unsqueeze(-1) - tokens_weight
+            gate = self.gated_module(logit)
+            x = x * gate
+            result = self.lora_B(self.lora_A(x)) * self.scaling 
+            result = jt.unsqueeze(type_weight, -1) * result
+            if self.is_train:
+                return result
+            else:
+                return result, tokens_weight, None
+
+        # 多专家模式（MoE LoRA）- 批处理优化版本
+        route_weight = jt.sigmoid(self.router(x))
+        logit = route_weight - tokens_weight
+        gate = self.gated_module(logit)
+
+        # 使用批处理操作减少循环开销
+        if self.hydra:
+            # Hydra模式：一次性计算所有专家的输出
+            shared_a_output = self.lora_A(x)
+            # 扩展gate维度以匹配专家数量
+            gate_expanded = gate.unsqueeze(-1)  # [batch, seq, expert, 1]
+            x_gated = x.unsqueeze(2) * gate_expanded  # [batch, seq, expert, dim]
+            
+            # 批处理所有B层
+            expert_outputs = []
+            for i in range(self.expert_num):
+                b_layer = cast(nn.Linear, self.lora_B_l[i])
+                expert_output = b_layer(shared_a_output * gate[:,:,i:i+1]) * self.scaling
+                expert_outputs.append(expert_output)
+            
+            # 使用stack和sum减少内存分配
+            expert_outputs = jt.stack(expert_outputs, dim=2)  # [batch, seq, expert, dim]
+            route_weight_expanded = route_weight.unsqueeze(-1)  # [batch, seq, expert, 1]
+            result = jt.sum(expert_outputs * route_weight_expanded, dim=2)
+        else:
+            # 标准模式：批处理优化
+            gate_expanded = gate.unsqueeze(-1)
+            x_gated = x.unsqueeze(2) * gate_expanded
+            
+            expert_outputs = []
+            for i in range(self.expert_num):
+                a_layer = cast(nn.Linear, self.lora_A_l[i])
+                b_layer = cast(nn.Linear, self.lora_B_l[i])
+                expert_output = b_layer(a_layer(x * gate[:,:,i:i+1])) * self.scaling
+                expert_outputs.append(expert_output)
+            
+            expert_outputs = jt.stack(expert_outputs, dim=2)
+            route_weight_expanded = route_weight.unsqueeze(-1)
+            result = jt.sum(expert_outputs * route_weight_expanded, dim=2)
+                
+        if not self.is_train:
+            return result, tokens_weight, route_weight
+        else:
+            return result
+
 
 class PAdapterLayer(Module):
     """并行适配器层，支持单专家和多专家模式"""
@@ -264,11 +346,11 @@ class PAdapterLayer(Module):
 
         if sparse:
             if if_trainable_gamma:
-                self.gamma = Gamma(hidden_size, if_trainable=True, gamma=gamma)
+                self.gamma = Gamma(hidden_size, expert_num, if_trainable=True, gamma=gamma)
             else:
-                self.gamma = Gamma(hidden_size, if_trainable=False, gamma=gamma)
+                self.gamma = Gamma(hidden_size, expert_num, if_trainable=False, gamma=gamma)
         else:
-            self.gamma = Gamma(hidden_size, if_trainable=False, gamma=0)
+            self.gamma = Gamma(hidden_size, expert_num, if_trainable=False, gamma=0)
 
         self.adapter_act_fn = nn.SiLU()
         self.gated_module = GatedModule()
@@ -347,17 +429,26 @@ class PAdapterLayer(Module):
         logit = route_weight - tokens_weight
         gate = self.gated_module(logit)
 
-        result = None
-        for i in range(self.expert_num):
-            if self.hydra:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj(x * gate[:,:,i].unsqueeze(-1))))
-            else:
-                tmp = jt.unsqueeze(route_weight[:,:,i], -1) * self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x * gate[:,:,i].unsqueeze(-1))))
+        # 预分配结果张量以减少内存碎片
+        if self.hydra:
+            # Hydra模式：共享down_proj，优化内存使用
+            shared_down_output = self.adapter_act_fn(self.down_proj(x))
+            result = jt.zeros_like(x)
             
-            if i == 0:
-                result = tmp
-            else:
-                result = result + tmp
+            for i in range(self.expert_num):
+                # 直接计算，避免不必要的unsqueeze
+                expert_output = self.up_proj_l[i](shared_down_output * gate[:,:,i:i+1])
+                # 使用原地操作减少内存分配
+                result += route_weight[:,:,i:i+1] * expert_output
+        else:
+            # 标准模式：每个专家独立的down_proj
+            result = jt.zeros_like(x)
+            
+            for i in range(self.expert_num):
+                # 合并操作减少中间变量
+                expert_output = self.up_proj_l[i](self.adapter_act_fn(self.down_proj_l[i](x * gate[:,:,i:i+1])))
+                # 使用原地操作
+                result += route_weight[:,:,i:i+1] * expert_output
                 
         if not self.is_train:
             return result, tokens_weight, route_weight

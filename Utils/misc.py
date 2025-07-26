@@ -21,6 +21,7 @@ import pynvml
 
 import jittor as jt
 
+# Jittor配置
 jt.flags.log_silent = 1
 
 
@@ -28,6 +29,7 @@ class SmoothedValue(object):
     """平滑值跟踪器，用于监控训练指标"""
 
     def __init__(self, window_size=20, fmt=None):
+        # 初始化平滑值跟踪器
         if fmt is None:
             fmt = "{median:.4f} ({global_avg:.4f})"
         self.window_size = window_size
@@ -47,6 +49,7 @@ class SmoothedValue(object):
         if jt.in_mpi == None:
             return
 
+        # MPI同步
         t = jt.array([self.count, self.total], dtype=jt.float64)
         t.mpi_all_reduce(op="sum")
         t = t.tolist()
@@ -54,6 +57,7 @@ class SmoothedValue(object):
         self.total = t[1]
 
     def get_state(self):
+        """获取状态字典"""
         return {
             'count': self.count,
             'total': self.total,
@@ -63,6 +67,7 @@ class SmoothedValue(object):
         }
 
     def load_state(self, state_dict):
+        """从状态字典加载数据"""
         self.deque = deque(state_dict['deque'], maxlen=state_dict['window_size'])
         self.count = state_dict['count']
         self.total = state_dict['total']
@@ -109,6 +114,7 @@ class MetricLogger(object):
     """指标记录器，管理训练过程中的多个指标"""
 
     def __init__(self, delimiter="\t"):
+        # 初始化指标记录器
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter
 
@@ -123,12 +129,14 @@ class MetricLogger(object):
             self.meters[k].update(v)
 
     def get_state_dict(self):
+        """获取状态字典"""
         return {
             'meters': {k: v.get_state() for k, v in self.meters.items()},
             'delimiter': self.delimiter
         }
 
     def load_state_dict(self, state_dict):
+        """从状态字典加载数据"""
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = state_dict['delimiter']
         for k, v in state_dict['meters'].items():
@@ -167,16 +175,20 @@ class MetricLogger(object):
         if not header:
             header = ''
         
+        # 初始化GPU监控
         pynvml.nvmlInit()
         handle = pynvml.nvmlDeviceGetHandleByIndex(jt.rank)
         info = pynvml.nvmlDeviceGetMemoryInfo(handle)
         
+        # 时间跟踪
         start_time = time.time()
         end = time.time()
         
+        # 创建时间跟踪器
         iter_time = SmoothedValue(fmt='{avg:.4f}')
         data_time = SmoothedValue(fmt='{avg:.4f}')
         
+        # 构建日志消息格式
         space_fmt = ':' + str(len(str(len(iterable)))) + 'd'
         log_msg = [
             header,
@@ -193,11 +205,13 @@ class MetricLogger(object):
         log_msg = self.delimiter.join(log_msg)
         MB = 1024.0 * 1024.0
         
+        # 迭代处理
         for obj in iterable:
             data_time.update(time.time() - end)
             yield obj
             iter_time.update(time.time() - end)
             
+            # 定期打印进度
             if (i % print_freq == 0 or i == len(iterable) - 1) and if_print == True:
                 eta_seconds = iter_time.global_avg * (len(iterable) - i)
                 eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
@@ -223,6 +237,7 @@ class MetricLogger(object):
             i += 1
             end = time.time()
         
+        # 打印总时间统计
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('{} Total time: {} ({:.4f} s / it)'.format(
@@ -276,23 +291,28 @@ def save_on_master(*args, **kwargs):
 
 def init_distributed_mode(args):
     """分布式初始化"""
+    # 初始化分布式参数
     args.distributed = False
     args.rank = 0
     args.world_size = 1
 
+    # 检测MPI环境
     if jt.in_mpi:
         args.rank = jt.rank
         args.world_size = jt.world_size
         args.distributed = args.world_size > 1
 
+    # GPU设备设置
     if jt.has_cuda:
         if args.distributed:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
             print(f"[Jittor] Rank {args.rank} using GPU {args.gpu}")
 
+    # 设置分布式打印
     if args.distributed:
         setup_for_distributed(args.rank == 0)
 
+    # 打印初始化信息
     if args.distributed and args.rank == 0:
         print(f"[Jittor] Distributed init done | rank {args.rank}/{args.world_size} | nproc {jt.get_nproc()}")
     elif not args.distributed:
@@ -301,15 +321,18 @@ def init_distributed_mode(args):
 
 def save_model(args, epoch, model, optimizer, early_stopper, log_writer, metric_logger, val_metric_logger):
     """保存模型检查点"""
+    # 生成模型文件夹名称
     folder_name = generate_model_folder_name(args)
     output_dir = Path(args.output_dir) / folder_name
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # 构建检查点路径
     epoch_name = str(epoch)
     checkpoint_path = output_dir / (f"checkpoint-{epoch_name}.pth")
 
     print('保存模型: ' + model.best_model_state_dict[0])
 
+    # 准备保存数据
     to_save = {
         'trainable_params': model.best_model_state_dict,
         'optimizer': optimizer.state_dict(),
@@ -382,7 +405,7 @@ def generate_model_folder_name(args):
         if dataset_name:
             components.append(dataset_name)
     
-    # 新增: 随机种子配置
+    # 随机种子配置
     if hasattr(args, 'seed') and args.seed is not None:
         components.append(f"seed{args.seed}")
     
@@ -413,10 +436,12 @@ def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
     decay = []
     no_decay = []
     
+    # 遍历模型参数
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
         
+        # 偏置项和一维参数不进行权重衰减
         if len(param.shape) == 1 or name.endswith(".bias") or name in skip_list:
             no_decay.append(param)
         else:
@@ -432,6 +457,7 @@ def find_latest_checkpoint(output_dir, folder_name=None):
     """查找最新的检查点文件"""
     output_path = Path(output_dir)
     
+    # 根据是否指定文件夹名查找检查点
     if folder_name:
         folder_path = output_path / folder_name
         if not folder_path.exists():
@@ -446,26 +472,28 @@ def find_latest_checkpoint(output_dir, folder_name=None):
     if not checkpoints:
         return None
     
+    # 返回最新的检查点
     latest_checkpoint = max(checkpoints, key=lambda x: int(x.stem.split('-')[1]))
     return str(latest_checkpoint)
 
 def get_first_notpid(tokens: jt.Var):
+    """获取序列中最后一个非-1的位置索引"""
     assert len(tokens.shape) == 2, f'tokens.shape: {tokens.shape}'
 
     # 假设 tokens.shape = [B, L]
     B, L = tokens.shape
 
-    # 1. 构造一个 mask，True 表示该位置不是 -1
+    # 构造mask，True表示该位置不是-1
     mask = tokens != -1               # shape [B, L]
 
-    # 2. 把序列在第 1 维（长度维）上反转
-    rev_mask = mask[:, ::-1]          # shape [B, L]，第 0 维不动，第 1 维反转
+    # 把序列在第1维（长度维）上反转
+    rev_mask = mask[:, ::-1]          # shape [B, L]，第0维不动，第1维反转
 
-    # 3. 找出反转后第一个 True 的位置（就是原序列从右向左的第一个非 -1）
-    #    argmax 会返回第一个最大值（True=1, False=0）的位置索引
+    # 找出反转后第一个True的位置（就是原序列从右向左的第一个非-1）
+    # argmax会返回第一个最大值（True=1, False=0）的位置索引
     pos_from_right, _ = jt.argmax(rev_mask, dim=1)  # 取元组的第二个元素，shape [B]
 
-    # 4. 把“从右边数来”的索引，映射回原来的坐标
+    # 把"从右边数来"的索引，映射回原来的坐标
     last_valid_idx = (L - 1) - pos_from_right    # shape [B]
 
     return last_valid_idx

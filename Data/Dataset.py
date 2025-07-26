@@ -18,18 +18,18 @@ PROMPT_DICT = {
     ),
 }
 
-# 分段提示模板，用于有输入的情况
+# 分段提示模板
 prompt_input = [(
-                    "Below is an instruction that describes a task, paired with an input that provides further context. "
-                    "Write a response that appropriately completes the request.\n\n"
-                    "### Instruction:\n"
-                ),
-                "\n\n### Input:\n",
-                "\n\n### Response:"]
+    "Below is an instruction that describes a task, paired with an input that provides further context. "
+    "Write a response that appropriately completes the request.\n\n"
+    "### Instruction:\n"
+),
+"\n\n### Input:\n",
+"\n\n### Response:"]
 
 
 class FinetuneDataset(Dataset):
-    """微调数据集类，支持多种数据格式"""
+    """微调数据集类"""
     
     def __init__(self, 
                  data_path: str, 
@@ -99,7 +99,7 @@ class FinetuneDataset(Dataset):
         ann = self.ann[index]
         
         if ann.get("input", "") == "":
-            # 无输入的情况：使用简单提示模板
+            # 无输入的情况
             prompt_str = PROMPT_DICT["prompt_no_input"].format_map(ann)
             example_str = prompt_str + ann["output"]
 
@@ -109,7 +109,7 @@ class FinetuneDataset(Dataset):
             prompt = jt.array(prompt_tokens, dtype='int32')
             example = jt.array(example_tokens, dtype='int32')
         else:
-            # 有输入的情况：使用分段提示模板
+            # 有输入的情况
             prompt0 = prompt_input[0]
             instruction = ann['instruction']
             prompt1 = prompt_input[1]
@@ -128,7 +128,7 @@ class FinetuneDataset(Dataset):
             prompt2_token = self.tokenizer.encode(prompt2, bos=False, eos=False)
             output_token = self.tokenizer.encode(output, bos=False, eos=True)
             
-            # 计算最大输入长度，确保总长度不超过限制
+            # 计算最大输入长度
             max_input_length = self.max_tokens - (len(part1_token) + len(prompt2_token) + len(output_token))
             input_token = input_token[:max_input_length]
             
@@ -138,7 +138,7 @@ class FinetuneDataset(Dataset):
             prompt = jt.array(prompt_tokens, dtype='int32')
             example = jt.array(example_tokens, dtype='int32')
 
-        # 填充或截断到指定长度
+        # 填充或截断
         padding = self.max_tokens - example.shape[0]
         if padding > 0:
             pad_arr = jt.full((padding,), -1, dtype='int32')
@@ -146,15 +146,13 @@ class FinetuneDataset(Dataset):
         elif padding < 0:
             example = example[-self.max_tokens:]
 
-        # 创建标签，只对输出部分计算损失
+        # 创建标签和掩码
         labels = example.clone()
-        labels[: len(prompt)] = -1  # 提示部分不计算损失
+        labels[: len(prompt)] = -1
 
-        # 创建掩码
         example_mask = (example >= 0).astype(jt.float16)
         label_mask = (labels >= 0).astype(jt.float16)
 
-        # 应用掩码
         example = jt.where(example_mask, example, jt.zeros_like(example))
         labels = jt.where(label_mask, labels, jt.zeros_like(labels))
 

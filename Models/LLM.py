@@ -1,6 +1,6 @@
 import jittor as jt
 from jittor import nn
-from typing import Optional, Tuple, cast
+from typing import Optional
 from .ModelArgs import ModelArgs
 from .Blok import Attention, FeedForward, RMSNorm, PAdapterLayer, Router, Module
 from .utils import precompute_freqs_cis
@@ -121,8 +121,8 @@ class TransformerBlock(Module):
                 adapter_states, tokens_weight, tmp_Multi_type_weight = self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
                 tokens_weights.append(tokens_weight)
                 out = out + adapter_states
-            if tmp_Multi_type_weight is not None:
-                Multi_type_weight = tmp_Multi_type_weight
+                if tmp_Multi_type_weight is not None:
+                    Multi_type_weight = tmp_Multi_type_weight
             else:
                 out = out + self.p_adapter(h, type_weight=type_weights[:,:,type_idx])
         out = residual + out

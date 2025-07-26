@@ -15,6 +15,7 @@ from pathlib import Path
 from Train.engine_finetune import train_one_epoch
 from tensorboardX import SummaryWriter
 
+# Jittor配置
 jt.flags.log_silent = 1
 jt.flags.auto_mixed_precision_level = 1
 
@@ -86,17 +87,20 @@ def get_args_parser():
     return parser
 
 def main(args):
-    # 设置设备
+    """主训练函数"""
+    
+    # 设置设备和分布式训练
     if args.device == 'cuda':
         jt.flags.use_cuda = 1
     
     if jt.in_mpi:
         setup_for_distributed(jt.rank == 0)
 
+    # 打印工作信息
     print(f'==================================================== Job Start ====================================================')
     print('工作文件夹: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     
-    
+    # 打印训练参数配置
     print("================================================== 训练参数配置 =====================================================")
     
     # 按类别分组打印参数
@@ -184,9 +188,8 @@ def main(args):
     # 配置优化器
     param_groups = add_weight_decay(model, args.weight_decay)
     optimizer = jt.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
-    # print(optimizer)
 
-    # 创建数据集
+    # 创建训练数据集
     dataset_train = FinetuneDataset(
         batch_size=args.batch_size,
         shuffle=True,
@@ -198,6 +201,7 @@ def main(args):
     )
     dataset_train.datainit()
 
+    # 创建验证数据集
     dataset_val = FinetuneDataset(
         batch_size=args.batch_size,
         shuffle=True,
@@ -209,7 +213,7 @@ def main(args):
     )
     dataset_val.datainit()
 
-    # 配置日志
+    # 配置TensorBoard日志
     args.log_dir = os.path.join(args.output_dir, 'log')
     
     if get_rank() == 0 and args.log_dir is not None:
@@ -218,10 +222,10 @@ def main(args):
     else:
         log_writer = None
 
-    # 配置早停
+    # 配置早停机制
     early_stopper = EarlyStopper(patience=args.early_stop_patience, min_delta=0.01, mode='min')
 
-    # 开始训练
+    # 开始训练循环
     print(f"================================================== 开始训练 {args.epochs} 轮 =====================================================")
     start_time = time.time()
     
@@ -239,11 +243,11 @@ def main(args):
             val_interval=30
         )
 
-        # 保存模型
+        # 保存模型检查点
         if args.output_dir:
             save_model(args=args, model=model, optimizer=optimizer, epoch=epoch)
 
-        # 记录日志
+        # 记录训练日志
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      'epoch': epoch,
                      **{f'val_{k}': v for k, v in val_stats.items()}}
@@ -255,13 +259,14 @@ def main(args):
             with open(os.path.join(args.output_dir, "log.txt"), mode="a", encoding="utf-8") as f:
                 f.write(json.dumps(log_stats) + "\n")
 
+        # 检查早停
         if early_stopped:
             print(f'================================================== 早停 =======================================================')
             break
 
         print(f'================================================== 第 {epoch} 轮训练完成 =======================================================')
 
-    # 训练完成
+    # 训练完成统计
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('训练时间: {}'.format(total_time_str))
@@ -270,7 +275,7 @@ def main(args):
 if __name__ == '__main__':
     parser = get_args_parser()
 
-    # 默认参数
+    # 默认参数配置
     if len(sys.argv) == 1:
         default_cli = [
             '--llama_path', '/HOME/thzskj_wfeng34/thzskj_wfeng34_1/HDD_POOL/Meta-Llama-3-8B-Instruct/original',
@@ -295,6 +300,7 @@ if __name__ == '__main__':
     else:
         args = parser.parse_args()
     
+    # 创建输出目录
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)

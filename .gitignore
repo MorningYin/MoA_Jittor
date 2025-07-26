@@ -1,2 +1,6 @@
-__pycache__/\n*.ckpt\n*.pth\noutput_jt/\n
+**/__pycache__/
+*.ckpt
 *.pth
+*.pkl
+Output/log/*
+Output/log.txt

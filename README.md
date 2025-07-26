@@ -11,6 +11,36 @@
   - 训练：混合精度训练、tensorboard 日志，终端输出的日志，log.txt 输出的日志，早停策略，微调模块权重的保存
   - 推理：结果的保存，token_weight、type_weight 的输出，热力图的绘画。
 
+## 实验结果展示
+
+### 不同种子下的适配器类型权重热力图对比
+
+我们使用不同的随机种子训练模型，并对比异构专家模型中不同专家类型权重（type_weight）的分布模式。以下是不同种子下的热力图对比：
+
+| 专家权重图（seed000） | 专家权重图（seed125） |
+|:-----------------:|:-------------------:|
+| ![Seed 0](Test_seed0/AddSub/type_weight_heatmap.png) | ![Seed 125](Test_seed125/AddSub/type_weight_heatmap.png) |
+
+大体结构较为一致，符合论文结果
+
+### 不同种子下的 token 阈值热力图对比
+
+| token 阈值图（seed000） | token 阈值图（seed125） |
+|:-----------------:|:-------------------:|
+| ![Seed 0](Test_seed0/AddSub/token_weight_heatmap.png) | ![Seed 125](Test_seed125/AddSub/token_weight_heatmap.png) |
+
+
+### 训练迭代图
+
+| train_loss 图（seed000） | train_loss 图（seed125） |
+|:-----------------:|:-------------------:|
+| ![Seed 0](Output/images/events.out.tfevents.1753506582.I22c3de30cc00e012e1/c_train_loss.png) | ![Seed 125](Output/images/events.out.tfevents.1753526305.I22c3de30cc00e012e1/c_train_loss.png) |
+
+| val_loss 图（seed000） | val_loss 图（seed125） |
+|:-----------------:|:-------------------:|
+| ![Seed 0](Output/images/events.out.tfevents.1753506582.I22c3de30cc00e012e1/val_loss.png) | ![Seed 125](Output/images/events.out.tfevents.1753526305.I22c3de30cc00e012e1/val_loss.png) |
+
+
 ## 环境信息
 
 ### 安装环境
@@ -36,7 +66,7 @@ python3.8 -m jittor_utils.install_cuda
 ### Jittor 报错二
 
 ```
-raise RuntimeError(f”MD5 mismatch between the server and the downloaded file {file_path}”) RuntimeError: MD5 mismatch between the server and the downloaded file /root/.cache/jittor/cutlass/cutlass.zip
+raise RuntimeError(f"MD5 mismatch between the server and the downloaded file {file_path}") RuntimeError: MD5 mismatch between the server and the downloaded file /root/.cache/jittor/cutlass/cutlass.zip
 ```
 
 **原因**：Jittor 源码中，安装 `cutlass` 的版本过旧
@@ -125,5 +155,6 @@ mpirun -np 2 python Math.py
 ### 推理流程
 
 分布式初始化 $ \to $ 手动加载测试集数据 $ \to $ 加载模型，并调成 `eval` 模式 $ \to $ 分批生成文本并写入 $ \to $ 判断是否获取专家权重信息和不同 token 阈值信息，是，则在推理时同步提取相关数据，保存为 `.pkl` 文件。
+
 
 
